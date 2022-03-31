@@ -16,10 +16,10 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "ecs/entity.hpp"
 #include "ecs/graphicsSystem.hpp"
 
 #include "game/states/gameStateMachine.hpp"
+#include "game/states/breakout.hpp"
 
 int main()
     {
@@ -52,6 +52,7 @@ int main()
         fe::time accumulator;
 
         gameStateMachine game;
+        game.push<breakout>();
 
         while (app.isOpen())
             {

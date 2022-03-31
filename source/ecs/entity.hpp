@@ -15,6 +15,8 @@ class entity
             std::string name = "";
 
             component &addComponent(component &component);
+            template<std::derived_from<component> TComponent>
+            TComponent &addComponent(component &component);
 
             bool hasComponent(const char *name) const;
             bool hasComponent(fe::str name) const;
@@ -26,3 +28,9 @@ class entity
             void removeComponent(fe::str name);
 
     };
+
+template<std::derived_from<component> TComponent>
+TComponent &entity::addComponent(component &component)
+    {
+        return static_cast<TComponent&>(addComponent(component));
+    }

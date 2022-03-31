@@ -38,6 +38,8 @@ graphicsEngine::graphicsEngine(window &app, graphicsSystem &graphicsSystem) :
         });
 
         glDisable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glClearColor(0.f, 0.f, 0.f, 1.0f);
     }
 

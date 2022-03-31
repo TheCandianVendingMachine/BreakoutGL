@@ -4,6 +4,7 @@
 #include "component.hpp"
 #include "graphics/texture.hpp"
 #include "graphics/transformable.hpp"
+#include "graphics/vertexArray.hpp"
 
 struct graphicsComponent : component
     {
