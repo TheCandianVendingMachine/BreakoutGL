@@ -10,9 +10,13 @@ class entity
     {
         private:
             robin_hood::unordered_map<fe::str, component*> m_components;
+            robin_hood::unordered_set<fe::str> m_tags;
 
         public:
             std::string name = "";
+
+            void setTag(const char *tag);
+            void setTag(fe::str tag);
 
             component &addComponent(component &component);
             template<std::derived_from<component> TComponent>

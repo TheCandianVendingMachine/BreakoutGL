@@ -3,6 +3,16 @@
 #include "component.hpp"
 #include <spdlog/spdlog.h>
 
+void entity::setTag(const char *tag)
+    {
+        m_tags.insert(FE_STR(tag));
+    }
+
+void entity::setTag(fe::str tag)
+    {
+        m_tags.insert(tag);
+    }
+
 component &entity::addComponent(component &component)
     {
         if (hasComponent(component.hashedName()))
