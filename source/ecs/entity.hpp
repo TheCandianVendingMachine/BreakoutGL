@@ -18,6 +18,9 @@ class entity
             void setTag(const char *tag);
             void setTag(fe::str tag);
 
+            bool hasTag(const char *tag);
+            bool hasTag(fe::str tag);
+
             component &addComponent(component &component);
             template<std::derived_from<component> TComponent>
             TComponent &addComponent(component &component);
