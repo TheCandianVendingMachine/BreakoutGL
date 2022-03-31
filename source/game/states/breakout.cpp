@@ -21,19 +21,29 @@ void breakout::createBall(glm::vec2 spawn, glm::vec2 velocity)
 
 void breakout::setGameState(state newState)
     {
-        spdlog::debug("setting state to {} from {} at {}", newState, m_currentGameState, m_gameClock.getTime().asSeconds());
+        spdlog::debug("setting game state to {} from {} at {}", newState, m_currentGameState, m_gameClock.getTime().asSeconds());
         m_currentGameState = newState;
         m_currentStateEnter = m_gameClock.getTime();
+
+        m_firstStateIteration = true;
     }
 
 void breakout::firstSpawnState()
     {
-        setGameState(state::GAMEPLAY);
+        if (m_firstStateIteration) 
+            {
+                createBall(m_ballSpawn, { 0.f, c_ballSpeed });
+            }
+
+        if (m_gameClock.getTime() - m_currentStateEnter >= fe::seconds(1))
+            {
+                setGameState(state::GAMEPLAY);
+            }
     }
 
 void breakout::respawnState()
     {
-        if (m_currentStateEnter - m_gameClock.getTime() >= fe::seconds(1))
+        if (m_gameClock.getTime() - m_currentStateEnter >= fe::seconds(1))
             {
                 setGameState(state::GAMEPLAY);
             }
@@ -72,8 +82,6 @@ void breakout::init()
 
         m_player.addComponent(m_healthSystem.create(3, "playerKilled", "playerHit"));
 
-        createBall({0.f, 0.f}, {0.f, 0.f});
-
         m_healthSystem.subscribe("playerHit", [this] (message &m) {
             spdlog::debug("Player hit");
             setGameState(state::RESPAWN);
@@ -83,6 +91,8 @@ void breakout::init()
             spdlog::debug("Player killed");
             setGameState(state::GAME_OVER);
         });
+
+        m_ballSpawn = { 240.f, 800.f };
     }
 
 void breakout::update()
@@ -108,8 +118,11 @@ void breakout::update()
 
 void breakout::fixedUpdate(float dt)
     {
-        m_playerControlSystem.update(dt);
-        m_physics.update(dt);
+        if (m_currentGameState == breakout::state::GAMEPLAY)
+            {
+                m_playerControlSystem.update(dt);
+                m_physics.update(dt);
+            }
 
         for (auto &ball : m_balls)
             {
@@ -126,6 +139,11 @@ void breakout::preUpdate()
         m_playerControlSystem.handleDestruction();
         m_physics.handleDestruction();
         m_healthSystem.handleDestruction();
+    }
+
+void breakout::postUpdate()
+    {
+        m_firstStateIteration = false;
     }
 
 void breakout::draw(graphicsEngine &graphics)

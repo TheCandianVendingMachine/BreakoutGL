@@ -10,6 +10,7 @@
 #include "time.hpp"
 #include "clock.hpp"
 #include <plf_colony.h>
+#include <glm/vec2.hpp>
 
 class breakout : public baseGameState
     {
@@ -25,6 +26,7 @@ class breakout : public baseGameState
             fe::clock m_gameClock;
             fe::time m_currentStateEnter;
             state m_currentGameState = state::FIRST_SPAWN;
+            bool m_firstStateIteration = true;
 
             playerControlSystem m_playerControlSystem;
             physicsSystem m_physics;
@@ -35,6 +37,9 @@ class breakout : public baseGameState
             entity m_player;
             plf::colony<entity> m_balls;
             plf::colony<entity> m_bricks;
+
+            glm::vec2 m_ballSpawn;
+            const float c_ballSpeed = 200.f;
 
             void createBall(glm::vec2 spawn, glm::vec2 velocity);
 
@@ -55,7 +60,7 @@ class breakout : public baseGameState
             virtual void fixedUpdate(float dt) override final;
 
             virtual void preUpdate() override final;
-            virtual void postUpdate() override final {}
+            virtual void postUpdate() override final;
 
             virtual void preDraw() override final {}
             virtual void draw(graphicsEngine &graphics) override final;
