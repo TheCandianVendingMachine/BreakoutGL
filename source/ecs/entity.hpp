@@ -24,6 +24,11 @@ class entity
             component *getComponent(const char *name) const;
             component *getComponent(fe::str name) const;
 
+            template<std::derived_from<component> TComponent>
+            TComponent *getComponent(const char *name) const;
+            template<std::derived_from<component> TComponent>
+            TComponent *getComponent(fe::str name) const;
+
             void removeComponent(const char *name);
             void removeComponent(fe::str name);
 
@@ -33,4 +38,16 @@ template<std::derived_from<component> TComponent>
 TComponent &entity::addComponent(component &component)
     {
         return static_cast<TComponent&>(addComponent(component));
+    }
+
+template<std::derived_from<component> TComponent>
+TComponent *entity::getComponent(const char *name) const
+    {
+        return static_cast<TComponent*>(getComponent(name));
+    }
+
+template<std::derived_from<component> TComponent>
+TComponent *entity::getComponent(fe::str name) const
+    {
+        return static_cast<TComponent*>(getComponent(name));
     }

@@ -1,6 +1,8 @@
 #include "breakout.hpp"
 #include "ecs/graphicsSystem.hpp"
 #include "graphics/graphicsEngine.hpp"
+#include "inputHandler.hpp"
+#include <GLFW/glfw3.h>
 
 void breakout::init()
     {
@@ -13,13 +15,29 @@ void breakout::init()
         m_gameCamera.zFar = 1.f;
 
         graphicsComponent &playerGraphics = m_player.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
-        playerGraphics.transform.scale = { 100.f, 30.f, 0.f };
-        playerGraphics.transform.position = { 100.f, 30.f, 0.f };
+        playerGraphics.transform.scale = { 100.f, 30.f };
+        playerGraphics.transform.position = { 100.f, 30.f };
         playerGraphics.texture.loadFromFile("paddle.png", false);
+
+        m_playerController.speed = 100.f;
+
+        globals::g_inputs->addDefaultInput("Gameplay", "Move Left", GLFW_KEY_LEFT);
+        globals::g_inputs->addDefaultInput("Gameplay", "Move Right", GLFW_KEY_RIGHT);
     }
 
 void breakout::fixedUpdate(float dt)
     {
+        paddleController::direction direction = paddleController::direction::NONE;
+        if (globals::g_inputs->keyState("Gameplay", "Move Left") == inputHandler::inputState::PRESS)
+            {
+                direction += paddleController::direction::LEFT;
+            }
+        if (globals::g_inputs->keyState("Gameplay", "Move Right") == inputHandler::inputState::PRESS)
+            {
+                direction += paddleController::direction::RIGHT;
+            }
+
+        m_player.getComponent<graphicsComponent>("graphics")->transform.position += m_playerController.getPositionDelta(direction) * dt;
     }
 
 void breakout::draw(graphicsEngine &graphics)

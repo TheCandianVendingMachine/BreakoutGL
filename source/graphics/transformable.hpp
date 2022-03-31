@@ -7,8 +7,8 @@
 class transformable
     {
         public:
-            glm::vec3 position = { 0, 0, 0 };
-            glm::vec3 scale = { 1, 1, 1 };
+            glm::vec2 position = { 0, 0  };
+            glm::vec2 scale = { 1, 1 };
             float angle = 0.f;
 
             glm::mat4 transform() const;
