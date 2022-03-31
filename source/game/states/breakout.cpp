@@ -8,6 +8,7 @@
 void breakout::createBall(glm::vec2 spawn, glm::vec2 velocity)
     {
         entity &ball = *m_balls.emplace();
+        ball.setTag("ball");
 
         graphicsComponent &ballGraphics = ball.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
         ballGraphics.transform.scale = { 10.f, 10.f };
@@ -17,6 +18,10 @@ void breakout::createBall(glm::vec2 spawn, glm::vec2 velocity)
         physicsComponent &physics = ball.addComponent<physicsComponent>(m_physics.create());
         physics.position = spawn;
         physics.velocity = velocity;
+
+        collisionComponent &collider = ball.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::CIRCLE, "", ""));
+        collider.collider.circle.radius = 10.f;
+        collider.position = spawn;
     }
 
 void breakout::setGameState(state newState)
@@ -77,6 +82,14 @@ void breakout::init()
 
         m_player.addComponent(m_healthSystem.create(3, "playerKilled", "playerHit"));
 
+        m_ballSpawn = { 240.f, 800.f };
+        createBall(m_ballSpawn, { 0.f, c_ballSpeed });
+
+        m_scoreBox.setTag("score box");
+        collisionComponent &scoreBoxCollider = m_scoreBox.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "score box hit", ""));
+        scoreBoxCollider.collider.box.extents = glm::vec2{ -m_gameCamera.right.x, 50.f };
+        scoreBoxCollider.position = glm::vec2{ 0.f, static_cast<float>(scale) - scoreBoxCollider.collider.box.extents.y };
+
         m_healthSystem.subscribe("playerHit", [this] (message &m) {
             spdlog::debug("Player hit");
             setGameState(state::RESPAWN);
@@ -87,8 +100,16 @@ void breakout::init()
             setGameState(state::GAME_OVER);
         });
 
-        m_ballSpawn = { 240.f, 800.f };
-        createBall(m_ballSpawn, { 0.f, c_ballSpeed });
+        m_collisionSystem.subscribe("score box hit", [this] (message &m) {
+            spdlog::debug("score box hit");
+            void *otherVoid = nullptr;
+            m.arguments[1].cast(otherVoid);
+            collisionComponent *other = static_cast<collisionComponent*>(otherVoid);
+            if (other->entity->hasTag("ball")) 
+                {
+                    m_healthSystem.damage(*m_player.getComponent<healthComponent>("health"), 1);
+                }
+        });
     }
 
 void breakout::update()
@@ -126,8 +147,13 @@ void breakout::fixedUpdate(float dt)
                     {
                         glm::vec2 physicsPosition = ball.getComponent<physicsComponent>("physics")->position;
                         ball.getComponent<graphicsComponent>("graphics")->transform.position = physicsPosition;
+
+                        collisionComponent *collider = ball.getComponent<collisionComponent>("collision");
+                        collider->position = physicsPosition + glm::vec2(collider->collider.circle.radius);
                     }
             }
+
+        m_collisionSystem.update();
     }
 
 void breakout::preUpdate()
@@ -143,6 +169,7 @@ void breakout::preUpdate()
         m_playerControlSystem.handleDestruction();
         m_physics.handleDestruction();
         m_healthSystem.handleDestruction();
+        m_collisionSystem.handleDestruction();
     }
 
 void breakout::draw(graphicsEngine &graphics)

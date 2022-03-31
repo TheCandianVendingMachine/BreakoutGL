@@ -7,6 +7,7 @@
 #include "ecs/playerControlSystem.hpp"
 #include "ecs/physicsSystem.hpp"
 #include "ecs/healthSystem.hpp"
+#include "ecs/collisionSystem.hpp"
 #include "time.hpp"
 #include "clock.hpp"
 #include <plf_colony.h>
@@ -32,10 +33,13 @@ class breakout : public baseGameState
             playerControlSystem m_playerControlSystem;
             physicsSystem m_physics;
             healthSystem m_healthSystem;
+            collisionSystem m_collisionSystem;
 
             orthographicCamera m_gameCamera;
 
             entity m_player;
+            entity m_scoreBox;
+
             plf::colony<entity> m_balls;
             plf::colony<entity> m_bricks;
 
