@@ -39,7 +39,7 @@ void breakout::init()
             100.f
         ));
 
-        createBall({0.f, 0.f}, {15.f, 200.f});
+        createBall({0.f, 0.f}, {0.f, 0.f});
     }
 
 void breakout::fixedUpdate(float dt)

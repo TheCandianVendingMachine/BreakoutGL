@@ -8,6 +8,7 @@ class entity;
 struct component
     {
         entity *entity = nullptr;
+        bool destroy = false;
 
         virtual const char *name() const = 0;
         fe::str hashedName() const;
