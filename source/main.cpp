@@ -15,15 +15,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 
 #include "ecs/entity.hpp"
 #include "ecs/graphicsSystem.hpp"
 
 #include "game/states/gameStateMachine.hpp"
-#include "game/states/gameState.hpp"
 
 int main()
     {
@@ -49,12 +45,6 @@ int main()
 
         c_inputHandler.save("inputs.ini");
 
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-
-        ImGui_ImplGlfw_InitForOpenGL(app.getWindow(), true);
-        ImGui_ImplOpenGL3_Init("#version 330");
-
         constexpr fe::time simulationRate = fe::seconds(1.f / 60.f);
         constexpr fe::time maxDeltaTime = fe::seconds(3);
         fe::clock runClock;
@@ -62,7 +52,6 @@ int main()
         fe::time accumulator;
 
         gameStateMachine game;
-        game.push<gameState>();
 
         while (app.isOpen())
             {
@@ -74,10 +63,6 @@ int main()
                     }
                 lastTime = currentTime;
                 accumulator += deltaTime;
-
-                ImGui_ImplOpenGL3_NewFrame();
-                ImGui_ImplGlfw_NewFrame();
-                ImGui::NewFrame();
 
                 if (globals::g_inputs->keyState("debug", "close") == inputHandler::inputState::PRESS)
                     {
@@ -96,9 +81,6 @@ int main()
                 game.postUpdate();
 
                 game.preDraw();
-                ImGui::Render();
-
-                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
                 game.draw(graphicsEngine);
 
@@ -106,10 +88,6 @@ int main()
 
                 app.pollEvents();
             }
-
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
 
         return 0;
     }
