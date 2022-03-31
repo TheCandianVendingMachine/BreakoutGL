@@ -70,6 +70,8 @@ int main()
                         app.close();
                     }
 
+                graphicsSystem.handleDestruction();
+
                 game.preUpdate();
                 game.update();
 

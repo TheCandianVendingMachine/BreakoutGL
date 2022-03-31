@@ -12,3 +12,18 @@ void physicsSystem::update(float dt)
                 physics.position += physics.velocity * dt;
             }
     }
+
+void physicsSystem::handleDestruction()
+    {
+        for (auto it = m_physicsComponents.begin(); it != m_physicsComponents.end())
+            {
+                if (it->destroy)
+                    {
+                        it = m_physicsComponents.erase(it);
+                    }
+                else
+                    {
+                        it++;
+                    }
+            }
+    }

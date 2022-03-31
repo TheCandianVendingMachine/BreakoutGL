@@ -6,6 +6,7 @@
 #include "ecs/entity.hpp"
 #include "ecs/playerControlSystem.hpp"
 #include "ecs/physicsSystem.hpp"
+#include "ecs/healthSystem.hpp"
 #include <plf_colony.h>
 
 class breakout : public baseGameState
@@ -13,6 +14,7 @@ class breakout : public baseGameState
         private:
             playerControlSystem m_playerControlSystem;
             physicsSystem m_physics;
+            healthSystem m_healthSystem;
 
             orthographicCamera m_gameCamera;
 
@@ -31,7 +33,7 @@ class breakout : public baseGameState
             virtual void update() override final {}
             virtual void fixedUpdate(float dt) override final;
 
-            virtual void preUpdate() override final {}
+            virtual void preUpdate() override final;
             virtual void postUpdate() override final {}
 
             virtual void preDraw() override final {}

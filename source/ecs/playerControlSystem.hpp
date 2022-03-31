@@ -13,5 +13,6 @@ class playerControlSystem
             playerControlComponent &create(inputHandler::input left, inputHandler::input right, float speed);
 
             void update(float dt);
+            void handleDestruction();
 
     };

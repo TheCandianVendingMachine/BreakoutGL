@@ -34,3 +34,18 @@ graphicsComponent &graphicsSystem::create()
     {
         return *m_graphicComponents.emplace();
     }
+
+void graphicsSystem::handleDestruction()
+    {
+        for (auto it = m_graphicComponents.begin(); it != m_graphicComponents.end())
+            {
+                if (it->destroy)
+                    {
+                        it = m_graphicComponents.erase(it);
+                    }
+                else
+                    {
+                        it++;
+                    }
+            }
+    }

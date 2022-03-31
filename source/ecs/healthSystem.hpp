@@ -13,7 +13,7 @@ class healthSystem : public eventSource
         public:
             healthComponent &create(int maxHealth, const char *messageOnDeath);
 
-            void update();
+            void handleDestruction();
             void damage(healthComponent &health, int amount);
 
     };

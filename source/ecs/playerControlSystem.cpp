@@ -32,3 +32,18 @@ void playerControlSystem::update(float dt)
                     }
             }
     }
+
+void playerControlSystem::handleDestruction()
+    {
+        for (auto it = m_playerControllers.begin(); it != m_playerControllers.end();)
+            {
+                if (it->destroy)
+                    {
+                        it = m_playerControllers.erase(it);
+                    }
+                else
+                    {
+                        it++;
+                    }
+            }
+    }

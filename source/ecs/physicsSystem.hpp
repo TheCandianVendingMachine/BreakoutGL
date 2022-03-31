@@ -13,5 +13,6 @@ class physicsSystem
             physicsComponent &create();
 
             void update(float dt);
+            void handleDestruction();
 
     };

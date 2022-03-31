@@ -13,7 +13,7 @@ healthComponent &healthSystem::create(int maxHealth, const char *messageOnDeath)
         return health;
     }
 
-void healthSystem::update()
+void healthSystem::handleDestruction()
     {
         for (auto it = m_healthComponents.begin(); it != m_healthComponents.end();)
             {

@@ -57,6 +57,13 @@ void breakout::fixedUpdate(float dt)
             }
     }
 
+void breakout::preUpdate()
+    {
+        m_playerControlSystem.handleDestruction();
+        m_physics.handleDestruction();
+        m_healthSystem.handleDestruction();
+    }
+
 void breakout::draw(graphicsEngine &graphics)
     {
         graphics.draw(m_gameCamera);
