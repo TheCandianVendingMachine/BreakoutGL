@@ -26,7 +26,8 @@ class breakout : public baseGameState
             fe::clock m_gameClock;
             fe::time m_currentStateEnter;
             state m_currentGameState = state::FIRST_SPAWN;
-            bool m_firstStateIteration = true;
+            state m_nextGameState;
+            bool m_newState = false;
 
             playerControlSystem m_playerControlSystem;
             physicsSystem m_physics;
@@ -52,17 +53,11 @@ class breakout : public baseGameState
 
         public:
             virtual void init() override final;
-            virtual void deinit() override final {}
-            virtual void onEnter() override final {}
-            virtual void onLeave() override final {}
 
             virtual void update() override final;
             virtual void fixedUpdate(float dt) override final;
 
             virtual void preUpdate() override final;
-            virtual void postUpdate() override final;
 
-            virtual void preDraw() override final {}
             virtual void draw(graphicsEngine &graphics) override final;
-            virtual void postDraw() override final {}
     };

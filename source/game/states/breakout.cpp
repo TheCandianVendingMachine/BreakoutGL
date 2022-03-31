@@ -21,20 +21,12 @@ void breakout::createBall(glm::vec2 spawn, glm::vec2 velocity)
 
 void breakout::setGameState(state newState)
     {
-        spdlog::debug("setting game state to {} from {} at {}", newState, m_currentGameState, m_gameClock.getTime().asSeconds());
-        m_currentGameState = newState;
-        m_currentStateEnter = m_gameClock.getTime();
-
-        m_firstStateIteration = true;
+        m_nextGameState = newState;
+        m_newState = true;
     }
 
 void breakout::firstSpawnState()
     {
-        if (m_firstStateIteration) 
-            {
-                createBall(m_ballSpawn, { 0.f, c_ballSpeed });
-            }
-
         if (m_gameClock.getTime() - m_currentStateEnter >= fe::seconds(1))
             {
                 setGameState(state::GAMEPLAY);
@@ -45,6 +37,9 @@ void breakout::respawnState()
     {
         if (m_gameClock.getTime() - m_currentStateEnter >= fe::seconds(1))
             {
+                m_balls.clear();
+                createBall(m_ballSpawn, { 0.f, c_ballSpeed });
+
                 setGameState(state::GAMEPLAY);
             }
     }
@@ -93,6 +88,7 @@ void breakout::init()
         });
 
         m_ballSpawn = { 240.f, 800.f };
+        createBall(m_ballSpawn, { 0.f, c_ballSpeed });
     }
 
 void breakout::update()
@@ -136,14 +132,17 @@ void breakout::fixedUpdate(float dt)
 
 void breakout::preUpdate()
     {
+        if (m_newState)
+            {
+                spdlog::debug("setting game state to {} from {} at {}", m_nextGameState, m_currentGameState, m_gameClock.getTime().asSeconds());
+                m_currentStateEnter = m_gameClock.getTime();
+                m_currentGameState = m_nextGameState;
+                m_newState = false;
+            }
+
         m_playerControlSystem.handleDestruction();
         m_physics.handleDestruction();
         m_healthSystem.handleDestruction();
-    }
-
-void breakout::postUpdate()
-    {
-        m_firstStateIteration = false;
     }
 
 void breakout::draw(graphicsEngine &graphics)
