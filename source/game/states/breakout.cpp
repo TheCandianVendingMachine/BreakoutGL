@@ -19,30 +19,21 @@ void breakout::init()
         playerGraphics.transform.position = { 100.f, 30.f };
         playerGraphics.texture.loadFromFile("paddle.png", false);
 
-        m_playerController.speed = 100.f;
+        m_player.addComponent(m_playerControlSystem.create(
+            globals::g_inputs->addDefaultInput("Gameplay", "Move Left", GLFW_KEY_LEFT),
+            globals::g_inputs->addDefaultInput("Gameplay", "Move Right", GLFW_KEY_RIGHT),
+            100.f
+        ));
 
         graphicsComponent &ballGraphics = m_ball.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
         ballGraphics.transform.scale = { 30.f, 30.f };
         ballGraphics.texture.loadFromFile("ball.png", false);
         ballGraphics.colour = { 0.f, 0.f, 0.f };
-
-        globals::g_inputs->addDefaultInput("Gameplay", "Move Left", GLFW_KEY_LEFT);
-        globals::g_inputs->addDefaultInput("Gameplay", "Move Right", GLFW_KEY_RIGHT);
     }
 
 void breakout::fixedUpdate(float dt)
     {
-        paddleController::direction direction = paddleController::direction::NONE;
-        if (globals::g_inputs->keyState("Gameplay", "Move Left") == inputHandler::inputState::PRESS)
-            {
-                direction += paddleController::direction::LEFT;
-            }
-        if (globals::g_inputs->keyState("Gameplay", "Move Right") == inputHandler::inputState::PRESS)
-            {
-                direction += paddleController::direction::RIGHT;
-            }
-
-        m_player.getComponent<graphicsComponent>("graphics")->transform.position += m_playerController.getPositionDelta(direction) * dt;
+        m_playerControlSystem.update(dt);
     }
 
 void breakout::draw(graphicsEngine &graphics)

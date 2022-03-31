@@ -19,10 +19,30 @@ class inputHandler
                     const fe::str &keyName = m_keyName;
                     const int &keyCode = m_keyCode;
 
-                    input(const input &rhs) = default;
-                    input(const input &&rhs) = default;
-                    input &operator=(const input &rhs) = default;
-                    input &operator=(const input &&rhs) = default;
+                    input(const input &rhs) { *this = rhs; };
+                    input(input &&rhs) noexcept { *this = std::move(rhs); };
+                    input &operator=(const input &rhs)
+                        {
+                            if (&rhs != this)
+                                {
+                                    m_group = rhs.group;
+                                    m_keyName = rhs.keyName;
+                                    m_keyCode = rhs.keyCode;
+                                }
+
+                            return *this;
+                        }
+                    input &operator=(input &&rhs) noexcept
+                        {
+                            if (&rhs != this)
+                                {
+                                    m_group = std::move(rhs.m_group);
+                                    m_keyName = std::move(rhs.m_keyName);
+                                    m_keyCode = std::move(rhs.m_keyCode);
+                                }
+
+                            return *this;
+                        }
 
                     private:
                         fe::str m_group = 0;

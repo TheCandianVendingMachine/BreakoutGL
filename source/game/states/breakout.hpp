@@ -4,14 +4,15 @@
 #include "baseGameState.hpp"
 #include "graphics/camera.hpp"
 #include "ecs/entity.hpp"
-#include "game/controllers/paddleController.hpp"
+#include "ecs/playerControlSystem.hpp"
 #include <plf_colony.h>
 
 class breakout : public baseGameState
     {
         private:
+            playerControlSystem m_playerControlSystem;
+
             orthographicCamera m_gameCamera;
-            paddleController m_playerController;
             entity m_player;
             entity m_ball;
             plf::colony<entity> m_bricks;
