@@ -26,7 +26,9 @@ class eventSource
             void signal(message event) const;
 
         public:
+            int subscribe(const char *event, handler callback);
             int subscribe(fe::str event, handler callback);
-            void unsubscribe(fe::str event, int id);
 
+            void unsubscribe(const char *event, int id);
+            void unsubscribe(fe::str event, int id);
     };

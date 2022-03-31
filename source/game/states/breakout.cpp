@@ -3,6 +3,7 @@
 #include "graphics/graphicsEngine.hpp"
 #include "inputHandler.hpp"
 #include <GLFW/glfw3.h>
+#include <spdlog/spdlog.h>
 
 void breakout::createBall(glm::vec2 spawn, glm::vec2 velocity)
     {
@@ -39,7 +40,13 @@ void breakout::init()
             100.f
         ));
 
+        m_player.addComponent(m_healthSystem.create(3, "playerKilled"));
+
         createBall({0.f, 0.f}, {0.f, 0.f});
+
+        m_healthSystem.subscribe("playerKilled", [this] (message &m) {
+            spdlog::info("Player killed");
+        });
     }
 
 void breakout::fixedUpdate(float dt)

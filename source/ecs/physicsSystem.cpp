@@ -15,7 +15,7 @@ void physicsSystem::update(float dt)
 
 void physicsSystem::handleDestruction()
     {
-        for (auto it = m_physicsComponents.begin(); it != m_physicsComponents.end())
+        for (auto it = m_physicsComponents.begin(); it != m_physicsComponents.end();)
             {
                 if (it->destroy)
                     {

@@ -1,4 +1,5 @@
 #include "eventSource.hpp"
+#include "str.hpp"
 
 void eventSource::signal(message event) const
     {
@@ -11,6 +12,11 @@ void eventSource::signal(message event) const
             }
     }
 
+int eventSource::subscribe(const char *event, handler callback)
+    {
+        return subscribe(FE_STR(event), callback);
+    }
+
 int eventSource::subscribe(fe::str event, handler callback)
     {
         observer o;
@@ -20,6 +26,11 @@ int eventSource::subscribe(fe::str event, handler callback)
         m_observers[event].push_back(o);
 
         return o.id;
+    }
+
+void eventSource::unsubscribe(const char *event, int id)
+    {
+        unsubscribe(FE_STR(event), id);
     }
 
 void eventSource::unsubscribe(fe::str event, int id)

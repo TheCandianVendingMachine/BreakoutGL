@@ -32,6 +32,8 @@ class entity
             void removeComponent(const char *name);
             void removeComponent(fe::str name);
 
+            ~entity();
+
     };
 
 template<std::derived_from<component> TComponent>

@@ -37,7 +37,7 @@ graphicsComponent &graphicsSystem::create()
 
 void graphicsSystem::handleDestruction()
     {
-        for (auto it = m_graphicComponents.begin(); it != m_graphicComponents.end())
+        for (auto it = m_graphicComponents.begin(); it != m_graphicComponents.end();)
             {
                 if (it->destroy)
                     {

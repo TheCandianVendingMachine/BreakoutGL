@@ -53,6 +53,15 @@ void entity::removeComponent(fe::str name)
     {
         if (hasComponent(name))
             {
+                m_components.at(name)->destroy = true;
                 m_components.erase(name);
+            }
+    }
+
+entity::~entity()
+    {
+        for (auto &component : m_components)
+            {
+                component.second->destroy = true;
             }
     }
