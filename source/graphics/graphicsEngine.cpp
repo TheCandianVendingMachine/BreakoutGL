@@ -10,7 +10,6 @@
 #include <spdlog/spdlog.h>
 
 #include "ecs/graphicsSystem.hpp"
-#include "ecs/tilemapSystem.hpp"
 
 graphicsEngine *globals::g_graphicsEngine = nullptr;
 
@@ -57,21 +56,6 @@ void graphicsEngine::draw(const camera &camera, unsigned int texture, drawFlags 
                 m_2dShader.setMat4("model", graphicComponent.transform.transform());
                 graphicComponent.texture.bind(GL_TEXTURE0);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-            }
-
-        if (m_tilemapSystem) 
-            {
-                m_tilemapShader.use();
-                m_tilemapShader.setMat4("view", camera.view());
-                m_tilemapShader.setMat4("projection", camera.projection());
-
-                for (auto &tilemapComponent : m_tilemapSystem->m_tilemapComponents)
-                {
-                    m_tilemapShader.setMat4("model", tilemapComponent.transform.transform());
-                    glBindVertexArray(tilemapComponent.vao);
-                    tilemapComponent.texture.bind(GL_TEXTURE0);
-                    glDrawArrays(GL_TRIANGLES, 0, tilemapComponent.vertices.size());
-                }
             }
 
         glBindVertexArray(0);
