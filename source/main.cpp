@@ -29,7 +29,7 @@ int main()
         c_generator.startUp();
         c_generator.seed(1337);
 
-        window app(1280, 720, "Logistic Simulator");
+        window app(500, 1000, "Breakout");
         glfwSetInputMode(app.getWindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
         graphicsSystem graphicsSystem;

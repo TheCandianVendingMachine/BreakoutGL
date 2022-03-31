@@ -11,7 +11,7 @@ class healthSystem : public eventSource
             plf::colony<healthComponent> m_healthComponents;
 
         public:
-            healthComponent &create(int maxHealth, const char *messageOnDeath);
+            healthComponent &create(int maxHealth, const char *messageOnDeath, const char *messageOnHit);
 
             void handleDestruction();
             void damage(healthComponent &health, int amount);

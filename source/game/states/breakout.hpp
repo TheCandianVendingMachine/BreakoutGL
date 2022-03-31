@@ -7,11 +7,25 @@
 #include "ecs/playerControlSystem.hpp"
 #include "ecs/physicsSystem.hpp"
 #include "ecs/healthSystem.hpp"
+#include "time.hpp"
+#include "clock.hpp"
 #include <plf_colony.h>
 
 class breakout : public baseGameState
     {
         private:
+            enum class state
+                {
+                    FIRST_SPAWN,
+                    RESPAWN,
+                    GAMEPLAY,
+                    GAME_OVER
+                };
+
+            fe::clock m_gameClock;
+            fe::time m_currentStateEnter;
+            state m_currentGameState = state::FIRST_SPAWN;
+
             playerControlSystem m_playerControlSystem;
             physicsSystem m_physics;
             healthSystem m_healthSystem;
@@ -24,13 +38,20 @@ class breakout : public baseGameState
 
             void createBall(glm::vec2 spawn, glm::vec2 velocity);
 
+            void setGameState(state newState);
+
+            void firstSpawnState();
+            void respawnState();
+            void gameplayState();
+            void gameOverState();
+
         public:
             virtual void init() override final;
             virtual void deinit() override final {}
             virtual void onEnter() override final {}
             virtual void onLeave() override final {}
 
-            virtual void update() override final {}
+            virtual void update() override final;
             virtual void fixedUpdate(float dt) override final;
 
             virtual void preUpdate() override final;

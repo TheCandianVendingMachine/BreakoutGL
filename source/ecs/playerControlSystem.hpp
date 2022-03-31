@@ -10,7 +10,7 @@ class playerControlSystem
             plf::colony<playerControlComponent> m_playerControllers;
 
         public:
-            playerControlComponent &create(inputHandler::input left, inputHandler::input right, float speed);
+            playerControlComponent &create(inputHandler::input left, inputHandler::input right, float speed, float maxRight, float width);
 
             void update(float dt);
             void handleDestruction();

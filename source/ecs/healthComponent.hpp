@@ -11,4 +11,5 @@ struct healthComponent : component
         int currentHealth = 0;
 
         fe::str eventOnDeath = 0;
+        fe::str eventOnHit = 0;
     };

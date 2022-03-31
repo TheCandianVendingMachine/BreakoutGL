@@ -2,9 +2,9 @@
 #include "ecs/entity.hpp"
 #include "graphicsComponent.hpp"
 
-playerControlComponent &playerControlSystem::create(inputHandler::input left, inputHandler::input right, float speed)
+playerControlComponent &playerControlSystem::create(inputHandler::input left, inputHandler::input right, float speed, float maxRight, float width)
     {
-        playerControlComponent &controller = *m_playerControllers.emplace(left, right, speed);
+        playerControlComponent &controller = *m_playerControllers.emplace(left, right, speed, maxRight, width);
 
         return controller;
     }
@@ -28,7 +28,14 @@ void playerControlSystem::update(float dt)
                 entity *parent = controller.entity;
                 if (parent->hasComponent("graphics"))
                     {
-                        parent->getComponent<graphicsComponent>("graphics")->transform.position += delta *dt;
+                        graphicsComponent *graphics = parent->getComponent<graphicsComponent>("graphics");
+                        glm::vec2 pos = graphics->transform.position;
+                        pos += delta * dt;
+
+                        pos.x = std::min(pos.x, controller.maxRightExtent - controller.width);
+                        pos.x = std::max(0.f, pos.x);
+
+                        graphics->transform.position = pos;
                     }
             }
     }

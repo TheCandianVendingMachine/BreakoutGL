@@ -9,13 +9,17 @@ struct playerControlComponent : component
     {
         virtual const char *name() const override final { return "playerControlComponent"; }
 
-        playerControlComponent(inputHandler::input left, inputHandler::input right, float speed) :
+        playerControlComponent(inputHandler::input left, inputHandler::input right, float speed, float maxRight, float playerWidth) :
             leftInput(left),
             rightInput(right),
-            controller{.speed = speed}
+            controller{.speed = speed},
+            maxRightExtent(maxRight),
+            width(playerWidth)
         {}
 
         inputHandler::input leftInput;
         inputHandler::input rightInput;
         paddleController controller;
+        float maxRightExtent = 0.f;
+        float width = 0.f;
     };
