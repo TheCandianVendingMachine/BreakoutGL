@@ -13,6 +13,7 @@ class breakout : public baseGameState
             orthographicCamera m_gameCamera;
             paddleController m_playerController;
             entity m_player;
+            entity m_ball;
             plf::colony<entity> m_bricks;
 
         public:

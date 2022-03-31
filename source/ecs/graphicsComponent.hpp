@@ -5,6 +5,7 @@
 #include "graphics/texture.hpp"
 #include "graphics/transformable.hpp"
 #include "graphics/vertexArray.hpp"
+#include <glm/vec3.hpp>
 
 struct graphicsComponent : component
     {
@@ -12,4 +13,5 @@ struct graphicsComponent : component
 
         transformable transform;
         texture texture;
+        glm::vec3 colour = { 1.f, 1.f, 1.f };
     };

@@ -21,6 +21,11 @@ void breakout::init()
 
         m_playerController.speed = 100.f;
 
+        graphicsComponent &ballGraphics = m_ball.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
+        ballGraphics.transform.scale = { 30.f, 30.f };
+        ballGraphics.texture.loadFromFile("ball.png", false);
+        ballGraphics.colour = { 0.f, 0.f, 0.f };
+
         globals::g_inputs->addDefaultInput("Gameplay", "Move Left", GLFW_KEY_LEFT);
         globals::g_inputs->addDefaultInput("Gameplay", "Move Right", GLFW_KEY_RIGHT);
     }

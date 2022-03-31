@@ -55,6 +55,7 @@ void graphicsEngine::draw(const camera &camera, unsigned int texture, drawFlags 
         glBindVertexArray(m_graphicsSystem.m_spriteQuad.vao);
         for (const auto &graphicComponent : m_graphicsSystem.m_graphicComponents) 
             {
+                m_2dShader.setVec3("DefinedColour", graphicComponent.colour);
                 m_2dShader.setMat4("model", graphicComponent.transform.transform());
                 graphicComponent.texture.bind(GL_TEXTURE0);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
