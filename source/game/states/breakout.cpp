@@ -4,6 +4,20 @@
 #include "inputHandler.hpp"
 #include <GLFW/glfw3.h>
 
+void breakout::createBall(glm::vec2 spawn, glm::vec2 velocity)
+    {
+        entity &ball = *m_balls.emplace();
+
+        graphicsComponent &ballGraphics = ball.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
+        ballGraphics.transform.scale = { 30.f, 30.f };
+        ballGraphics.texture.loadFromFile("ball.png", false);
+        ballGraphics.colour = { 0.f, 0.f, 1.f };
+
+        physicsComponent &physics = ball.addComponent<physicsComponent>(m_physics.create());
+        physics.position = spawn;
+        physics.velocity = velocity;
+    }
+
 void breakout::init()
     {
         m_gameCamera.position = { 0, 0, 0 };
@@ -25,15 +39,22 @@ void breakout::init()
             100.f
         ));
 
-        graphicsComponent &ballGraphics = m_ball.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
-        ballGraphics.transform.scale = { 30.f, 30.f };
-        ballGraphics.texture.loadFromFile("ball.png", false);
-        ballGraphics.colour = { 0.f, 0.f, 0.f };
+        createBall({0.f, 0.f}, {15.f, 200.f});
     }
 
 void breakout::fixedUpdate(float dt)
     {
         m_playerControlSystem.update(dt);
+        m_physics.update(dt);
+
+        for (auto &ball : m_balls)
+            {
+                if (ball.hasComponent("physics") && ball.hasComponent("graphics"))
+                    {
+                        glm::vec2 physicsPosition = ball.getComponent<physicsComponent>("physics")->position;
+                        ball.getComponent<graphicsComponent>("graphics")->transform.position = physicsPosition;
+                    }
+            }
     }
 
 void breakout::draw(graphicsEngine &graphics)

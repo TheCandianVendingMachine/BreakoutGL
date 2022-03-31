@@ -5,17 +5,22 @@
 #include "graphics/camera.hpp"
 #include "ecs/entity.hpp"
 #include "ecs/playerControlSystem.hpp"
+#include "ecs/physicsSystem.hpp"
 #include <plf_colony.h>
 
 class breakout : public baseGameState
     {
         private:
             playerControlSystem m_playerControlSystem;
+            physicsSystem m_physics;
 
             orthographicCamera m_gameCamera;
+
             entity m_player;
-            entity m_ball;
+            plf::colony<entity> m_balls;
             plf::colony<entity> m_bricks;
+
+            void createBall(glm::vec2 spawn, glm::vec2 velocity);
 
         public:
             virtual void init() override final;
