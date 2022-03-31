@@ -61,16 +61,30 @@ void inputHandler::save(const char *filepath) const
         config.save(filepath);
     }
 
-void inputHandler::addInput(std::string_view group, std::string_view keyName, int keyCode)
+inputHandler::input inputHandler::addInput(std::string_view group, std::string_view keyName, int keyCode)
     {
+        inputHandler::input newInput;
+        newInput.m_group = FE_STR(group.data());
+        newInput.m_keyName = FE_STR(keyName.data());
+        newInput.m_keyCode = keyCode;
+
         m_inputGroups[group.data()].push_back(keyName.data());
-        m_inputs[FE_STR(group.data())][FE_STR(keyName.data())] = keyCode;
+        m_inputs[newInput.group][newInput.keyName] = keyCode;
+
+        return newInput;
     }
 
-void inputHandler::addDefaultInput(std::string_view group, std::string_view keyName, int keyCode)
+inputHandler::input inputHandler::addDefaultInput(std::string_view group, std::string_view keyName, int keyCode)
     {
+        inputHandler::input newInput;
+        newInput.m_group = FE_STR(group.data());
+        newInput.m_keyName = FE_STR(keyName.data());
+        newInput.m_keyCode = keyCode;
+
         m_defaultInputGroups[group.data()].push_back(keyName.data());
-        m_defaultInputs[FE_STR(group.data())][FE_STR(keyName.data())] = keyCode;
+        m_defaultInputs[newInput.m_group][newInput.m_keyName] = keyCode;
+
+        return newInput;
     }
 
 int inputHandler::inputCode(std::string_view group, std::string_view keyName) const
@@ -87,6 +101,17 @@ int inputHandler::inputCode(std::string_view group, std::string_view keyName) co
         return m_inputs.at(groupStr).at(keyStr);
     }
 
+int inputHandler::inputCode(inputHandler::input input) const
+    {
+        if (m_inputs.find(input.group) == m_inputs.end() ||
+            m_inputs.at(input.group).find(input.keyName) == m_inputs.at(input.group).end()
+            )
+            {
+                return defaultInputCode(input);
+            }
+        return m_inputs.at(input.group).at(input.keyName);
+    }
+
 int inputHandler::defaultInputCode(std::string_view group, std::string_view keyName) const
     {
         fe::str groupStr = FE_STR(group.data());
@@ -99,6 +124,17 @@ int inputHandler::defaultInputCode(std::string_view group, std::string_view keyN
                 return -1;
             }
         return m_defaultInputs.at(groupStr).at(keyStr);
+    }
+
+int inputHandler::defaultInputCode(inputHandler::input input) const
+    {
+        if (m_defaultInputs.find(input.group) == m_defaultInputs.end() ||
+            m_defaultInputs.at(input.group).find(input.keyName) == m_defaultInputs.at(input.group).end()
+            )
+            {
+                return -1;
+            }
+        return m_defaultInputs.at(input.group).at(input.keyName);
     }
 
 inputHandler::inputState inputHandler::keyState(std::string_view group, std::string_view keyName) const
@@ -117,6 +153,11 @@ inputHandler::inputState inputHandler::keyState(int keyCode) const
         return states[state];
     }
 
+inputHandler::inputState inputHandler::keyState(inputHandler::input input) const
+    {
+        return keyState(input.keyCode);
+    }
+
 inputHandler::inputState inputHandler::mouseState(std::string_view group, std::string_view mouseName) const
     {
         return mouseState(inputCode(group, mouseName));
@@ -131,6 +172,11 @@ inputHandler::inputState inputHandler::mouseState(int mouseCode) const
 
         int state = glfwGetMouseButton(const_cast<GLFWwindow*>(m_window), mouseCode);
         return states[state];
+    }
+
+inputHandler::inputState inputHandler::mouseState(inputHandler::input input) const
+    {
+        return mouseState(input.keyCode);
     }
 
 glm::vec2 inputHandler::getCursorPosition() const
