@@ -1,6 +1,7 @@
 #include "playerControlSystem.hpp"
 #include "ecs/entity.hpp"
 #include "graphicsComponent.hpp"
+#include "collisionComponent.hpp"
 
 playerControlComponent &playerControlSystem::create(inputHandler::input left, inputHandler::input right, float speed, float maxRight, float width)
     {
@@ -36,6 +37,12 @@ void playerControlSystem::update(float dt)
                         pos.x = std::max(0.f, pos.x);
 
                         graphics->transform.position = pos;
+
+                        if (parent->hasComponent("collision"))
+                            {
+                                collisionComponent *collision = parent->getComponent<collisionComponent>("collision");
+                                collision->position = pos;
+                            }
                     }
             }
     }

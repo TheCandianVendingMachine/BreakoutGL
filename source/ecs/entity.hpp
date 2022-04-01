@@ -13,6 +13,7 @@ class entity
             robin_hood::unordered_set<fe::str> m_tags;
 
         public:
+            const robin_hood::unordered_set<fe::str> &tags = m_tags;
             std::string name = "";
 
             void setTag(const char *tag);

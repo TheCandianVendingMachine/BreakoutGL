@@ -20,6 +20,9 @@ bool entity::hasTag(const char *tag)
 
 bool entity::hasTag(fe::str tag)
     {
+#ifdef _DEBUG
+        std::string tagName = fe::impl::g_debugStrings.strs.at(tag);
+#endif
         return m_tags.find(tag) != m_tags.end();
     }
 

@@ -19,7 +19,7 @@ void breakout::createBall(glm::vec2 spawn, glm::vec2 velocity)
         physics.position = spawn;
         physics.velocity = velocity;
 
-        collisionComponent &collider = ball.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::CIRCLE, "", ""));
+        collisionComponent &collider = ball.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::CIRCLE, "on ball collision", ""));
         collider.collider.circle.radius = 10.f;
         collider.position = spawn;
     }
@@ -38,14 +38,24 @@ void breakout::firstSpawnState()
             }
     }
 
+void breakout::resetState()
+    {
+        if (m_gameClock.getTime() - m_currentStateEnter >= fe::seconds(0.7))
+            {
+                setGameState(state::GAMEPLAY);
+            }
+    }
+
 void breakout::respawnState()
     {
-        if (m_gameClock.getTime() - m_currentStateEnter >= fe::seconds(1))
+        if (m_gameClock.getTime() - m_currentStateEnter >= fe::seconds(0.65))
             {
                 m_balls.clear();
                 createBall(m_ballSpawn, { 0.f, c_ballSpeed });
 
-                setGameState(state::GAMEPLAY);
+                m_player.getComponent<graphicsComponent>("graphics")->transform.position.x = 200.f;
+
+                setGameState(state::RESET);
             }
     }
 
@@ -67,6 +77,8 @@ void breakout::init()
         m_gameCamera.zNear = -1.f;
         m_gameCamera.zFar = 1.f;
 
+        m_player.setTag("player");
+
         graphicsComponent &playerGraphics = m_player.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
         playerGraphics.transform.scale = { 100.f, 30.f };
         playerGraphics.transform.position = { 200.f, 900.f };
@@ -82,13 +94,33 @@ void breakout::init()
 
         m_player.addComponent(m_healthSystem.create(3, "playerKilled", "playerHit"));
 
+        collisionComponent &playerCollider = m_player.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "on player collision", ""));
+        playerCollider.collider.box.extents = { 100.f, 30.f };
+        playerCollider.position = playerGraphics.transform.position;
+
         m_ballSpawn = { 240.f, 800.f };
         createBall(m_ballSpawn, { 0.f, c_ballSpeed });
 
         m_scoreBox.setTag("score box");
         collisionComponent &scoreBoxCollider = m_scoreBox.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "score box hit", ""));
-        scoreBoxCollider.collider.box.extents = glm::vec2{ -m_gameCamera.right.x, 50.f };
+        scoreBoxCollider.collider.box.extents = glm::vec2{ -m_gameCamera.right.x, 5.f };
         scoreBoxCollider.position = glm::vec2{ 0.f, static_cast<float>(scale) - scoreBoxCollider.collider.box.extents.y };
+
+        collisionComponent &leftCollider = m_leftWall.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "", ""));
+        leftCollider.collider.box.extents = { 50.f, 1000.f };
+        leftCollider.position = { -50.f, 0.f };
+        m_leftWall.setTag("wall");
+
+        collisionComponent &rightCollider = m_rightWall.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "", ""));
+        rightCollider.collider.box.extents = { 50.f, 1000.f };
+        rightCollider.position = { 500.f, 0.f };
+        m_rightWall.setTag("wall");
+
+        collisionComponent &topCollider = m_topWall.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "", ""));
+        topCollider.collider.box.extents = { 500.f, 50.f };
+        topCollider.position = { 0.f, -50.f };
+        m_topWall.setTag("wall");
+        m_topWall.setTag("top");
 
         m_healthSystem.subscribe("playerHit", [this] (message &m) {
             spdlog::debug("Player hit");
@@ -110,6 +142,48 @@ void breakout::init()
                     m_healthSystem.damage(*m_player.getComponent<healthComponent>("health"), 1);
                 }
         });
+
+        m_collisionSystem.subscribe("on ball collision", [this] (message &m) {
+            spdlog::debug("ball collision");
+
+            void *thisVoid = nullptr;
+            m.arguments[0].cast(thisVoid);
+            collisionComponent *thisCollider = static_cast<collisionComponent*>(thisVoid);
+
+            void *otherVoid = nullptr;
+            m.arguments[1].cast(otherVoid);
+            collisionComponent *other = static_cast<collisionComponent*>(otherVoid);
+
+            physicsComponent *physics = thisCollider->entity->getComponent<physicsComponent>("physics");
+            if (other->entity->hasTag("player"))
+                {
+                    glm::vec2 direction = glm::normalize((other->position + other->collider.box.extents * 0.5f) - thisCollider->position);
+                    physics->velocity = -direction * c_ballSpeed;
+                }
+            else if (other->entity->hasTag("wall"))
+                {
+                    spdlog::debug("ball-wall collision");
+                    if (other->entity->hasTag("top")) 
+                        {
+                            physics->velocity.y *= -1.f;
+                            physics->position.y = 0.f;
+                        }
+                    else
+                        {
+                            physics->velocity.x *= -1.f;
+
+                            float wallXPos = other->entity->getComponent<collisionComponent>("collision")->position.x;
+                            if (wallXPos < physics->position.x) 
+                                {
+                                    physics->position.x = 0.f;
+                                }
+                            else 
+                                {
+                                    physics->position.x = wallXPos - thisCollider->collider.circle.radius;
+                                }
+                        }
+                }
+        });
     }
 
 void breakout::update()
@@ -118,6 +192,9 @@ void breakout::update()
             {
                 case breakout::state::FIRST_SPAWN:
                     firstSpawnState();
+                    break;
+                case breakout::state::RESET:
+                    resetState();
                     break;
                 case breakout::state::RESPAWN:
                     respawnState();
@@ -145,10 +222,11 @@ void breakout::fixedUpdate(float dt)
             {
                 if (ball.hasComponent("physics") && ball.hasComponent("graphics"))
                     {
+                        collisionComponent *collider = ball.getComponent<collisionComponent>("collision");
                         glm::vec2 physicsPosition = ball.getComponent<physicsComponent>("physics")->position;
+
                         ball.getComponent<graphicsComponent>("graphics")->transform.position = physicsPosition;
 
-                        collisionComponent *collider = ball.getComponent<collisionComponent>("collision");
                         collider->position = physicsPosition + glm::vec2(collider->collider.circle.radius);
                     }
             }

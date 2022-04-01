@@ -20,6 +20,7 @@ class breakout : public baseGameState
                 {
                     FIRST_SPAWN,
                     RESPAWN,
+                    RESET,
                     GAMEPLAY,
                     GAME_OVER
                 };
@@ -40,6 +41,10 @@ class breakout : public baseGameState
             entity m_player;
             entity m_scoreBox;
 
+            entity m_leftWall;
+            entity m_rightWall;
+            entity m_topWall;
+
             plf::colony<entity> m_balls;
             plf::colony<entity> m_bricks;
 
@@ -52,6 +57,7 @@ class breakout : public baseGameState
 
             void firstSpawnState();
             void respawnState();
+            void resetState();
             void gameplayState();
             void gameOverState();
 
