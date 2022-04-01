@@ -137,5 +137,16 @@ void collisionSystem::update()
 
 void collisionSystem::handleDestruction()
     {
+        for (auto it = m_colliders.begin(); it != m_colliders.end();)
+            {
+                if (it->destroy)
+                    {
+                        it = m_colliders.erase(it);
+                    }
+                else
+                    {
+                        ++it;
+                    }
+            }
     }
 

@@ -22,6 +22,7 @@ class breakout : public baseGameState
                     RESPAWN,
                     RESET,
                     GAMEPLAY,
+                    LEVEL_COMPLETE,
                     GAME_OVER
                 };
 
@@ -60,6 +61,7 @@ class breakout : public baseGameState
             void resetState();
             void gameplayState();
             void gameOverState();
+            void levelCompleteState();
 
         public:
             virtual void init() override final;

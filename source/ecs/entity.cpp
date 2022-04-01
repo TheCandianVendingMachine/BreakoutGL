@@ -13,12 +13,12 @@ void entity::setTag(fe::str tag)
         m_tags.insert(tag);
     }
 
-bool entity::hasTag(const char *tag)
+bool entity::hasTag(const char *tag) const
     {
         return hasTag(FE_STR(tag));
     }
 
-bool entity::hasTag(fe::str tag)
+bool entity::hasTag(fe::str tag) const
     {
 #ifdef _DEBUG
         std::string tagName = fe::impl::g_debugStrings.strs.at(tag);
@@ -79,6 +79,16 @@ void entity::removeComponent(fe::str name)
                 m_components.at(name)->destroy = true;
                 m_components.erase(name);
             }
+    }
+
+void entity::kill()
+    {
+        m_kill = true;
+    }
+
+bool entity::killed() const
+    {
+        return m_kill;
     }
 
 entity::~entity()

@@ -12,6 +12,8 @@ class entity
             robin_hood::unordered_map<fe::str, component*> m_components;
             robin_hood::unordered_set<fe::str> m_tags;
 
+            bool m_kill = false;
+
         public:
             const robin_hood::unordered_set<fe::str> &tags = m_tags;
             std::string name = "";
@@ -19,8 +21,8 @@ class entity
             void setTag(const char *tag);
             void setTag(fe::str tag);
 
-            bool hasTag(const char *tag);
-            bool hasTag(fe::str tag);
+            bool hasTag(const char *tag) const;
+            bool hasTag(fe::str tag) const;
 
             component &addComponent(component &component);
             template<std::derived_from<component> TComponent>
@@ -39,6 +41,9 @@ class entity
 
             void removeComponent(const char *name);
             void removeComponent(fe::str name);
+
+            void kill();
+            bool killed() const;
 
             ~entity();
 

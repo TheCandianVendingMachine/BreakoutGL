@@ -61,6 +61,14 @@ void breakout::respawnState()
 
 void breakout::gameplayState()
     {
+        if (m_bricks.empty())
+            {
+                setGameState(state::LEVEL_COMPLETE);
+            }
+    }
+
+void breakout::levelCompleteState()
+    {
     }
 
 void breakout::gameOverState()
@@ -122,6 +130,36 @@ void breakout::init()
         m_topWall.setTag("wall");
         m_topWall.setTag("top");
 
+        constexpr float xBuffer = 30.f;
+        constexpr float yBuffer = 50.f;
+        constexpr float blockGap = 2.f;
+        constexpr int xCount = 5;
+        constexpr int yCount = 10;
+
+        constexpr float blockWidth = (500.f - 2 * xBuffer - (xCount - 1) * blockGap) / xCount;
+        constexpr float blockHeight = blockWidth / 2.f;
+
+        for (int x = 0; x < xCount; x++)
+            {
+                for (int y = 0; y < yCount; y++)
+                    {
+                        entity &brick = *m_bricks.emplace();
+                        graphicsComponent &brickGraphic = brick.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
+                        brickGraphic.texture.loadFromFile("brick.png", false);
+                        brickGraphic.transform.scale = { blockWidth, blockHeight };
+                        brickGraphic.colour = { 1.f, 0.f, 0.2f };
+                        brickGraphic.transform.position = { x * blockWidth + xBuffer + blockGap * x, y * blockHeight + yBuffer + blockGap * y};
+
+                        collisionComponent &brickCollision = brick.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "brick hit", ""));
+                        brickCollision.collider.box.extents = { blockWidth, blockHeight };
+                        brickCollision.position = brickGraphic.transform.position;
+
+                        brick.addComponent(m_healthSystem.create(1, "brick killed", ""));
+
+                        brick.setTag("brick");
+                    }
+            }
+
         m_healthSystem.subscribe("playerHit", [this] (message &m) {
             spdlog::debug("Player hit");
             setGameState(state::RESPAWN);
@@ -130,6 +168,14 @@ void breakout::init()
         m_healthSystem.subscribe("playerKilled", [this] (message &m) {
             spdlog::debug("Player killed");
             setGameState(state::GAME_OVER);
+        });
+
+        m_healthSystem.subscribe("brick killed", [this] (message &m) {
+            spdlog::debug("brick killed");
+            void *otherVoid = nullptr;
+            m.arguments[0].cast(otherVoid);
+            healthComponent *other = static_cast<healthComponent*>(otherVoid);
+            other->entity->kill();
         });
 
         m_collisionSystem.subscribe("score box hit", [this] (message &m) {
@@ -141,6 +187,14 @@ void breakout::init()
                 {
                     m_healthSystem.damage(*m_player.getComponent<healthComponent>("health"), 1);
                 }
+        });
+
+        m_collisionSystem.subscribe("brick hit", [this] (message &m) {
+            spdlog::debug("brick hit");
+            void *thisVoid = nullptr;
+            m.arguments[0].cast(thisVoid);
+            collisionComponent *thisCollider = static_cast<collisionComponent*>(thisVoid);
+            m_healthSystem.damage(*thisCollider->entity->getComponent<healthComponent>("health"), 1);
         });
 
         m_collisionSystem.subscribe("on ball collision", [this] (message &m) {
@@ -183,6 +237,11 @@ void breakout::init()
                                 }
                         }
                 }
+            else if (other->entity->hasTag("brick"))
+                {
+                    spdlog::debug("ball-brick collision");
+                    physics->velocity.y *= -1.f;
+                }
         });
     }
 
@@ -202,6 +261,9 @@ void breakout::update()
                 case breakout::state::GAMEPLAY:
                     gameplayState();
                     break;
+                case breakout::state::LEVEL_COMPLETE:
+                    levelCompleteState();
+                    break;
                 case breakout::state::GAME_OVER:
                     gameOverState();
                     break;
@@ -218,16 +280,37 @@ void breakout::fixedUpdate(float dt)
                 m_physics.update(dt);
             }
 
-        for (auto &ball : m_balls)
+        for (auto it = m_balls.begin(); it != m_balls.end();)
             {
-                if (ball.hasComponent("physics") && ball.hasComponent("graphics"))
+                if (it->killed())
                     {
-                        collisionComponent *collider = ball.getComponent<collisionComponent>("collision");
-                        glm::vec2 physicsPosition = ball.getComponent<physicsComponent>("physics")->position;
+                        it = m_balls.erase(it);
+                    }
+                else
+                    {
+                        entity &ball = *it;
+                        if (ball.hasComponent("physics") && ball.hasComponent("graphics"))
+                            {
+                                collisionComponent *collider = ball.getComponent<collisionComponent>("collision");
+                                glm::vec2 physicsPosition = ball.getComponent<physicsComponent>("physics")->position;
 
-                        ball.getComponent<graphicsComponent>("graphics")->transform.position = physicsPosition;
+                                ball.getComponent<graphicsComponent>("graphics")->transform.position = physicsPosition;
 
-                        collider->position = physicsPosition + glm::vec2(collider->collider.circle.radius);
+                                collider->position = physicsPosition + glm::vec2(collider->collider.circle.radius);
+                            }
+                        ++it;
+                    }
+            }
+
+        for (auto it = m_bricks.begin(); it != m_bricks.end();)
+            {
+                if (it->killed())
+                    {
+                        it = m_bricks.erase(it);
+                    }
+                else
+                    {
+                        ++it;
                     }
             }
 
@@ -254,3 +337,4 @@ void breakout::draw(graphicsEngine &graphics)
     {
         graphics.draw(m_gameCamera);
     }
+
