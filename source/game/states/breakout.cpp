@@ -100,6 +100,8 @@ void breakout::init()
             100.f
         ));
 
+        globals::g_inputs->save("inputs.ini");
+
         m_player.addComponent(m_healthSystem.create(3, "playerKilled", "playerHit"));
 
         collisionComponent &playerCollider = m_player.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "on player collision", ""));
@@ -240,7 +242,21 @@ void breakout::init()
             else if (other->entity->hasTag("brick"))
                 {
                     spdlog::debug("ball-brick collision");
-                    physics->velocity.y *= -1.f;
+                    glm::vec2 min = other->position;
+                    glm::vec2 max = min + other->collider.box.extents;
+
+                    glm::vec2 closestPoint = glm::min(glm::max(thisCollider->position, min), max);
+
+                    glm::vec2 directionToPoint = glm::abs(closestPoint - thisCollider->position);
+
+                    if (directionToPoint.x > directionToPoint.y)
+                        {
+                            physics->velocity.x *= -1.f;
+                        }
+                    else
+                        {
+                            physics->velocity.y *= -1.f;
+                        }
                 }
         });
     }
