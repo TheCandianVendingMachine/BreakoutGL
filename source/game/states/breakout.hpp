@@ -48,11 +48,13 @@ class breakout : public baseGameState
 
             plf::colony<entity> m_balls;
             plf::colony<entity> m_bricks;
+            plf::colony<entity> m_powerups;
 
             glm::vec2 m_ballSpawn;
             const float c_ballSpeed = 200.f;
 
             void createBall(glm::vec2 spawn, glm::vec2 velocity);
+            void createPowerup(glm::vec2 brickCenter);
 
             void setGameState(state newState);
 

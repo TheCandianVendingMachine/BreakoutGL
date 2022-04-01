@@ -4,6 +4,7 @@
 #else
 #include <x86intrin.h>
 #endif
+#include <limits>
 
 fe::randomImpl *fe::randomImpl::m_instance = nullptr;
 
@@ -44,6 +45,16 @@ fe::uint64 fe::randomImpl::generate()
         x ^= x << 17;
         stateA = x;
         return stateA;
+    }
+
+float fe::randomNormal()
+    {
+        return static_cast<float>(fe::random()) / std::numeric_limits<fe::uint64>().max();
+    }
+
+float fe::randomNormal(float min, float max)
+    {
+        return min + (max - min) * fe::randomNormal();
     }
 
 fe::uint64 fe::random(fe::uint64 min, fe::uint64 max)

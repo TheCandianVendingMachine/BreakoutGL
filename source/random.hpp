@@ -24,6 +24,11 @@ namespace fe
                     fe::uint64 generate();
             };
 
+        // returns random number between 0 and 1
+        float randomNormal();
+        // returns random number between range
+        float randomNormal(float min, float max);
+
         fe::uint64 random(fe::uint64 min, fe::uint64 max);
         fe::uint64 random();
     }

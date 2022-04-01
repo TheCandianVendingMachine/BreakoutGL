@@ -2,6 +2,7 @@
 #include "ecs/graphicsSystem.hpp"
 #include "graphics/graphicsEngine.hpp"
 #include "inputHandler.hpp"
+#include "random.hpp"
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
 
@@ -22,6 +23,81 @@ void breakout::createBall(glm::vec2 spawn, glm::vec2 velocity)
         collisionComponent &collider = ball.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::CIRCLE, "on ball collision", ""));
         collider.collider.circle.radius = 10.f;
         collider.position = spawn;
+    }
+
+void breakout::createPowerup(glm::vec2 brickCenter)
+    {
+        enum class powerups
+            {
+                MULTIBALL,
+                SHORTEN,
+                HEALTH,
+                WIDEN,
+                COUNT
+            };
+
+        entity &powerup = *m_powerups.emplace();
+        powerup.setTag("powerup");
+
+        graphicsComponent &graphics = powerup.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
+        graphics.transform.scale = { 50, 30 };
+        graphics.transform.position = brickCenter - graphics.transform.scale * 0.5f;
+
+        physicsComponent &physics = powerup.addComponent<physicsComponent>(m_physics.create());
+        physics.position = brickCenter - graphics.transform.scale * 0.5f;
+        physics.velocity = { 0.f, 50.f };
+
+        collisionComponent &collision = powerup.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "powerup gained", ""));
+        collision.position = brickCenter - graphics.transform.scale * 0.5f;
+        collision.collider.box.extents = { 50.f, 30.f };
+
+        powerups thisPowerup = static_cast<powerups>(fe::random(0, static_cast<int>(powerups::COUNT)));
+        switch (thisPowerup)
+            {
+                case powerups::MULTIBALL:
+                    graphics.texture.loadFromFile("power-multiball.png", false);
+                    break;
+                case powerups::SHORTEN:
+                    graphics.texture.loadFromFile("power-shorten.png", false);
+                    break;
+                case powerups::HEALTH:
+                    graphics.texture.loadFromFile("powerup-health.png", false);
+                    break;
+                case powerups::WIDEN:
+                    graphics.texture.loadFromFile("power-widen.png", false);
+                    break;
+                default:
+                    break;
+            }
+
+        m_collisionSystem.subscribe("powerup gained", [thisPowerup, &powerup] (message &m) {
+            void *otherVoid = nullptr;
+            m.arguments[1].cast(otherVoid);
+            collisionComponent *other = static_cast<collisionComponent*>(otherVoid);
+
+            if (other->entity->hasTag("player"))
+                {
+                    powerup.kill();
+
+                    switch (thisPowerup)
+                        {
+                            case powerups::MULTIBALL:
+                                spdlog::debug("multiball get");
+                                break;
+                            case powerups::SHORTEN:
+                                spdlog::debug("shorten get");
+                                break;
+                            case powerups::HEALTH:
+                                spdlog::debug("health get");
+                                break;
+                            case powerups::WIDEN:
+                                spdlog::debug("widen get");
+                                break;
+                            default:
+                                break;
+                        }
+                }
+        });
     }
 
 void breakout::setGameState(state newState)
@@ -177,7 +253,14 @@ void breakout::init()
             void *otherVoid = nullptr;
             m.arguments[0].cast(otherVoid);
             healthComponent *other = static_cast<healthComponent*>(otherVoid);
+            graphicsComponent *graphics = other->entity->getComponent<graphicsComponent>("graphics");
             other->entity->kill();
+
+            if (fe::randomNormal() < 0.1f)
+                {
+                    spdlog::debug("Powerup");
+                    createPowerup(graphics->transform.position + graphics->transform.scale / 2.f);
+                }
         });
 
         m_collisionSystem.subscribe("score box hit", [this] (message &m) {
@@ -196,7 +279,14 @@ void breakout::init()
             void *thisVoid = nullptr;
             m.arguments[0].cast(thisVoid);
             collisionComponent *thisCollider = static_cast<collisionComponent*>(thisVoid);
-            m_healthSystem.damage(*thisCollider->entity->getComponent<healthComponent>("health"), 1);
+
+            void *otherVoid = nullptr;
+            m.arguments[1].cast(otherVoid);
+            collisionComponent *otherCollider = static_cast<collisionComponent *>(otherVoid);
+            if (otherCollider->entity->hasTag("ball"))
+                {
+                    m_healthSystem.damage(*thisCollider->entity->getComponent<healthComponent>("health"), 1);
+                }
         });
 
         m_collisionSystem.subscribe("on ball collision", [this] (message &m) {
@@ -214,6 +304,10 @@ void breakout::init()
             if (other->entity->hasTag("player"))
                 {
                     glm::vec2 direction = glm::normalize((other->position + other->collider.box.extents * 0.5f) - thisCollider->position);
+                    if (direction.x == 0.f)
+                        {
+                            direction.x = fe::randomNormal(-0.2f, 0.2f);
+                        }
                     physics->velocity = -direction * c_ballSpeed;
                 }
             else if (other->entity->hasTag("wall"))
@@ -318,14 +412,21 @@ void breakout::fixedUpdate(float dt)
                     }
             }
 
-        for (auto it = m_bricks.begin(); it != m_bricks.end();)
+        for (auto it = m_powerups.begin(); it != m_powerups.end();)
             {
                 if (it->killed())
                     {
-                        it = m_bricks.erase(it);
+                        it = m_powerups.erase(it);
                     }
                 else
                     {
+                        entity &powerup = *it;
+                        collisionComponent *collider = powerup.getComponent<collisionComponent>("collision");
+                        glm::vec2 physicsPosition = powerup.getComponent<physicsComponent>("physics")->position;
+
+                        powerup.getComponent<graphicsComponent>("graphics")->transform.position = physicsPosition;
+
+                        collider->position = physicsPosition;
                         ++it;
                     }
             }
@@ -347,6 +448,30 @@ void breakout::preUpdate()
         m_physics.handleDestruction();
         m_healthSystem.handleDestruction();
         m_collisionSystem.handleDestruction();
+
+        for (auto it = m_bricks.begin(); it != m_bricks.end();)
+            {
+                if (it->killed())
+                    {
+                        it = m_bricks.erase(it);
+                    }
+                else
+                    {
+                        ++it;
+                    }
+            }
+
+        for (auto it = m_powerups.begin(); it != m_powerups.end();)
+            {
+                if (it->killed())
+                    {
+                        it = m_powerups.erase(it);
+                    }
+                else
+                    {
+                        ++it;
+                    }
+            }
     }
 
 void breakout::draw(graphicsEngine &graphics)
