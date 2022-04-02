@@ -51,7 +51,7 @@ void breakout::createPowerup(glm::vec2 brickCenter)
         collision.position = brickCenter - graphics.transform.scale * 0.5f;
         collision.collider.box.extents = { 50.f, 30.f };
 
-        powerups thisPowerup = static_cast<powerups>(fe::random(0, static_cast<int>(powerups::COUNT)));
+        powerups thisPowerup = static_cast<powerups>(fe::random(0, static_cast<int>(powerups::COUNT) - 1));
         switch (thisPowerup)
             {
                 case powerups::MULTIBALL:
@@ -70,7 +70,7 @@ void breakout::createPowerup(glm::vec2 brickCenter)
                     break;
             }
 
-        m_collisionSystem.subscribe("powerup gained", [thisPowerup, &powerup, this] (message &m) {
+        m_collisionSystem.subscribe("powerup gained", [thisPowerup, &powerup, this] (message &m, int id) {
             void *thisVoid = nullptr;
             m.arguments[0].cast(thisVoid);
             collisionComponent *thisCollider = static_cast<collisionComponent*>(thisVoid);
@@ -81,6 +81,7 @@ void breakout::createPowerup(glm::vec2 brickCenter)
 
             if (other->entity->hasTag("player"))
                 {
+                    m_collisionSystem.unsubscribe("powerup gained", id);
                     powerup.kill();
 
                     switch (thisPowerup)
@@ -256,7 +257,7 @@ void breakout::init()
                     }
             }
 
-        m_healthSystem.subscribe("playerHit", [this] (message &m) {
+        m_healthSystem.subscribe("playerHit", [this] (message &m, int) {
             spdlog::debug("Player hit");
             int damageTaken = 0;
             m.arguments[3].cast(damageTaken);
@@ -266,12 +267,12 @@ void breakout::init()
                 }
         });
 
-        m_healthSystem.subscribe("playerKilled", [this] (message &m) {
+        m_healthSystem.subscribe("playerKilled", [this] (message &m, int) {
             spdlog::debug("Player killed");
             setGameState(state::GAME_OVER);
         });
 
-        m_healthSystem.subscribe("brick killed", [this] (message &m) {
+        m_healthSystem.subscribe("brick killed", [this] (message &m, int) {
             spdlog::debug("brick killed");
             void *otherVoid = nullptr;
             m.arguments[0].cast(otherVoid);
@@ -286,7 +287,7 @@ void breakout::init()
                 }
         });
 
-        m_collisionSystem.subscribe("score box hit", [this] (message &m) {
+        m_collisionSystem.subscribe("score box hit", [this] (message &m, int) {
             spdlog::debug("score box hit");
             void *otherVoid = nullptr;
             m.arguments[1].cast(otherVoid);
@@ -304,7 +305,7 @@ void breakout::init()
                 }
         });
 
-        m_collisionSystem.subscribe("brick hit", [this] (message &m) {
+        m_collisionSystem.subscribe("brick hit", [this] (message &m, int) {
             spdlog::debug("brick hit");
             void *thisVoid = nullptr;
             m.arguments[0].cast(thisVoid);
@@ -319,7 +320,7 @@ void breakout::init()
                 }
         });
 
-        m_collisionSystem.subscribe("on ball collision", [this] (message &m) {
+        m_collisionSystem.subscribe("on ball collision", [this] (message &m, int) {
             spdlog::debug("ball collision");
 
             void *thisVoid = nullptr;

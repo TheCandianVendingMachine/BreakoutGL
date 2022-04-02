@@ -7,7 +7,7 @@ void eventSource::signal(message event) const
             {
                 for (auto &observer : m_observers.at(event.event))
                     {
-                        observer.callback(event);
+                        observer.callback(event, observer.id);
                     }
             }
     }

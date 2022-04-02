@@ -30,7 +30,7 @@ graphicsEngine::graphicsEngine(window &app, graphicsSystem &graphicsSystem) :
         m_screenHeight = app.height;
 
         createFramebuffers();
-        app.subscribe(FE_STR("framebufferResize"), [this] (message &event) {
+        app.subscribe(FE_STR("framebufferResize"), [this] (message &event, int) {
             m_screenWidth = event.arguments[0].variable.INT;
             m_screenHeight = event.arguments[1].variable.INT;
 

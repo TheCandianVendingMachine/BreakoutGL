@@ -10,7 +10,7 @@
 class eventSource
     {
         public:
-            using handler = std::function<void(message&)>;
+            using handler = std::function<void(message&, int)>;
 
         private:
             struct observer
