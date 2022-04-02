@@ -52,6 +52,7 @@ void breakout::createPowerup(glm::vec2 brickCenter)
         collision.collider.box.extents = { 50.f, 30.f };
 
         powerups thisPowerup = static_cast<powerups>(fe::random(0, static_cast<int>(powerups::COUNT)));
+        thisPowerup = powerups::HEALTH;
         switch (thisPowerup)
             {
                 case powerups::MULTIBALL:
@@ -70,7 +71,11 @@ void breakout::createPowerup(glm::vec2 brickCenter)
                     break;
             }
 
-        m_collisionSystem.subscribe("powerup gained", [thisPowerup, &powerup] (message &m) {
+        m_collisionSystem.subscribe("powerup gained", [thisPowerup, &powerup, this] (message &m) {
+            void *thisVoid = nullptr;
+            m.arguments[0].cast(thisVoid);
+            collisionComponent *thisCollider = static_cast<collisionComponent*>(thisVoid);
+
             void *otherVoid = nullptr;
             m.arguments[1].cast(otherVoid);
             collisionComponent *other = static_cast<collisionComponent*>(otherVoid);
@@ -83,12 +88,19 @@ void breakout::createPowerup(glm::vec2 brickCenter)
                         {
                             case powerups::MULTIBALL:
                                 spdlog::debug("multiball get");
+                                {
+                                    glm::vec2 spawnPos = other->position + glm::vec2(other->collider.box.extents.x * 0.5f, -30.f);
+                                    createBall(spawnPos, { 0.f, -c_ballSpeed });
+                                    createBall(spawnPos, c_ballSpeed * glm::normalize(glm::vec2{ 0.5f, -0.5f }));
+                                    createBall(spawnPos, c_ballSpeed * glm::normalize(glm::vec2{ -0.5f, -0.5f }));
+                                }
                                 break;
                             case powerups::SHORTEN:
                                 spdlog::debug("shorten get");
                                 break;
                             case powerups::HEALTH:
                                 spdlog::debug("health get");
+                                m_healthSystem.damage(*other->entity->getComponent<healthComponent>("health"), -1);
                                 break;
                             case powerups::WIDEN:
                                 spdlog::debug("widen get");
@@ -240,7 +252,12 @@ void breakout::init()
 
         m_healthSystem.subscribe("playerHit", [this] (message &m) {
             spdlog::debug("Player hit");
-            setGameState(state::RESPAWN);
+            int damageTaken = 0;
+            m.arguments[3].cast(damageTaken);
+            if (damageTaken > 0) 
+                {
+                    setGameState(state::RESPAWN);
+                }
         });
 
         m_healthSystem.subscribe("playerKilled", [this] (message &m) {
@@ -270,7 +287,14 @@ void breakout::init()
             collisionComponent *other = static_cast<collisionComponent*>(otherVoid);
             if (other->entity->hasTag("ball")) 
                 {
-                    m_healthSystem.damage(*m_player.getComponent<healthComponent>("health"), 1);
+                    if (m_balls.size() == 1) 
+                        {
+                            m_healthSystem.damage(*m_player.getComponent<healthComponent>("health"), 1);
+                        }
+                    else
+                        {
+                            other->entity->kill();
+                        }
                 }
         });
 
