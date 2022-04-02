@@ -3,6 +3,11 @@
 #include "graphicsComponent.hpp"
 #include "collisionComponent.hpp"
 
+playerControlSystem::playerControlSystem(fe::clock &clock) :
+    m_clock(clock)
+    {
+    }
+
 playerControlComponent &playerControlSystem::create(inputHandler::input left, inputHandler::input right, float speed, float maxRight, float width)
     {
         playerControlComponent &controller = *m_playerControllers.emplace(left, right, speed, maxRight, width);
@@ -44,6 +49,11 @@ void playerControlSystem::update(float dt)
                                 collision->position = pos;
                             }
                     }
+
+                if (controller.state != playerControlComponent::paddleState::NORMAL && m_clock.getTime() - controller.timeStateEntered >= fe::seconds(10))
+                    {
+                        changePaddleState(controller, playerControlComponent::paddleState::NORMAL);
+                    }
             }
     }
 
@@ -59,5 +69,38 @@ void playerControlSystem::handleDestruction()
                     {
                         it++;
                     }
+            }
+    }
+
+void playerControlSystem::changePaddleState(playerControlComponent &controller, playerControlComponent::paddleState state)
+    {
+        controller.state = state;
+        controller.timeStateEntered = m_clock.getTime();
+
+        collisionComponent *collision = controller.entity->getComponent<collisionComponent>("collision");
+        graphicsComponent *graphics = controller.entity->getComponent<graphicsComponent>("graphics");
+
+        switch (state)
+            {
+                case playerControlComponent::paddleState::NORMAL:
+                    collision->collider.box.extents = { 100.f, 30.f };
+                    graphics->transform.scale = { 100.f, 30.f };
+
+                    graphics->texture.loadFromFile("paddle.png", false);
+                    break;
+                case playerControlComponent::paddleState::SHORT:
+                    collision->collider.box.extents = { 70.f, 30.f };
+                    graphics->transform.scale = { 70.f, 30.f };
+
+                    graphics->texture.loadFromFile("narrow-paddle.png", false);
+                    break;
+                case playerControlComponent::paddleState::WIDE:
+                    collision->collider.box.extents = { 130.f, 30.f };
+                    graphics->transform.scale = { 130.f, 30.f };
+
+                    graphics->texture.loadFromFile("wide-paddle.png", false);
+                    break;
+                default:
+                    break;
             }
     }

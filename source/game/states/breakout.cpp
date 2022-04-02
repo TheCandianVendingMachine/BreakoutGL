@@ -52,7 +52,6 @@ void breakout::createPowerup(glm::vec2 brickCenter)
         collision.collider.box.extents = { 50.f, 30.f };
 
         powerups thisPowerup = static_cast<powerups>(fe::random(0, static_cast<int>(powerups::COUNT)));
-        thisPowerup = powerups::HEALTH;
         switch (thisPowerup)
             {
                 case powerups::MULTIBALL:
@@ -97,6 +96,7 @@ void breakout::createPowerup(glm::vec2 brickCenter)
                                 break;
                             case powerups::SHORTEN:
                                 spdlog::debug("shorten get");
+                                m_playerControlSystem.changePaddleState(*m_player.getComponent<playerControlComponent>("playerControlComponent"), playerControlComponent::paddleState::SHORT);
                                 break;
                             case powerups::HEALTH:
                                 spdlog::debug("health get");
@@ -104,6 +104,7 @@ void breakout::createPowerup(glm::vec2 brickCenter)
                                 break;
                             case powerups::WIDEN:
                                 spdlog::debug("widen get");
+                                m_playerControlSystem.changePaddleState(*m_player.getComponent<playerControlComponent>("playerControlComponent"), playerControlComponent::paddleState::WIDE);
                                 break;
                             default:
                                 break;
@@ -156,6 +157,11 @@ void breakout::gameplayState()
     }
 
 void breakout::levelCompleteState()
+    {
+    }
+
+breakout::breakout() :
+    m_playerControlSystem(m_gameClock)
     {
     }
 

@@ -4,6 +4,7 @@
 #include "component.hpp"
 #include "game/controllers/paddleController.hpp"
 #include "inputHandler.hpp"
+#include "time.hpp"
 
 struct playerControlComponent : component
     {
@@ -22,4 +23,13 @@ struct playerControlComponent : component
         paddleController controller;
         float maxRightExtent = 0.f;
         float width = 0.f;
+
+        enum class paddleState
+            {
+                NORMAL,
+                SHORT,
+                WIDE
+            };
+        paddleState state = paddleState::NORMAL;
+        fe::time timeStateEntered = 0;
     };

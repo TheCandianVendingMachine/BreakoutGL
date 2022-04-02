@@ -66,6 +66,8 @@ class breakout : public baseGameState
             void levelCompleteState();
 
         public:
+            breakout();
+
             virtual void init() override final;
 
             virtual void update() override final;
