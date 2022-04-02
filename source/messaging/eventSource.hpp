@@ -22,8 +22,15 @@ class eventSource
             robin_hood::unordered_map<fe::str, std::vector<observer>> m_observers;
             robin_hood::unordered_map<fe::str, int> m_ids;
 
+            struct toDestroy
+                {
+                    fe::str event = 0;
+                    int id = 0;
+                };
+            std::vector<toDestroy> m_queuedDestruction;
+
         protected:
-            void signal(message event) const;
+            void signal(message event);
 
         public:
             int subscribe(const char *event, handler callback);

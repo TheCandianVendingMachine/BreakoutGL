@@ -56,62 +56,23 @@ void breakout::createPowerup(glm::vec2 brickCenter)
             {
                 case powerups::MULTIBALL:
                     graphics.texture.loadFromFile("power-multiball.png", false);
+                    powerup.setTag("multiball");
                     break;
                 case powerups::SHORTEN:
                     graphics.texture.loadFromFile("power-shorten.png", false);
+                    powerup.setTag("shorten");
                     break;
                 case powerups::HEALTH:
                     graphics.texture.loadFromFile("powerup-health.png", false);
+                    powerup.setTag("health");
                     break;
                 case powerups::WIDEN:
                     graphics.texture.loadFromFile("power-widen.png", false);
+                    powerup.setTag("widen");
                     break;
                 default:
                     break;
             }
-
-        m_collisionSystem.subscribe("powerup gained", [thisPowerup, &powerup, this] (message &m, int id) {
-            void *thisVoid = nullptr;
-            m.arguments[0].cast(thisVoid);
-            collisionComponent *thisCollider = static_cast<collisionComponent*>(thisVoid);
-
-            void *otherVoid = nullptr;
-            m.arguments[1].cast(otherVoid);
-            collisionComponent *other = static_cast<collisionComponent*>(otherVoid);
-
-            if (other->entity->hasTag("player"))
-                {
-                    m_collisionSystem.unsubscribe("powerup gained", id);
-                    powerup.kill();
-
-                    switch (thisPowerup)
-                        {
-                            case powerups::MULTIBALL:
-                                spdlog::debug("multiball get");
-                                {
-                                    glm::vec2 spawnPos = other->position + glm::vec2(other->collider.box.extents.x * 0.5f, -30.f);
-                                    createBall(spawnPos, { 0.f, -c_ballSpeed });
-                                    createBall(spawnPos, c_ballSpeed * glm::normalize(glm::vec2{ 0.5f, -0.5f }));
-                                    createBall(spawnPos, c_ballSpeed * glm::normalize(glm::vec2{ -0.5f, -0.5f }));
-                                }
-                                break;
-                            case powerups::SHORTEN:
-                                spdlog::debug("shorten get");
-                                m_playerControlSystem.changePaddleState(*m_player.getComponent<playerControlComponent>("playerControlComponent"), playerControlComponent::paddleState::SHORT);
-                                break;
-                            case powerups::HEALTH:
-                                spdlog::debug("health get");
-                                m_healthSystem.damage(*other->entity->getComponent<healthComponent>("health"), -1);
-                                break;
-                            case powerups::WIDEN:
-                                spdlog::debug("widen get");
-                                m_playerControlSystem.changePaddleState(*m_player.getComponent<playerControlComponent>("playerControlComponent"), playerControlComponent::paddleState::WIDE);
-                                break;
-                            default:
-                                break;
-                        }
-                }
-        });
     }
 
 void breakout::setGameState(state newState)
@@ -141,6 +102,8 @@ void breakout::respawnState()
         if (m_gameClock.getTime() - m_currentStateEnter >= fe::seconds(0.65))
             {
                 m_balls.clear();
+                m_powerups.clear();
+
                 createBall(m_ballSpawn, { 0.f, c_ballSpeed });
 
                 m_player.getComponent<graphicsComponent>("graphics")->transform.position.x = 200.f;
@@ -280,7 +243,7 @@ void breakout::init()
             graphicsComponent *graphics = other->entity->getComponent<graphicsComponent>("graphics");
             other->entity->kill();
 
-            if (fe::randomNormal() < 0.1f)
+            if (fe::randomNormal() < 0.8f)
                 {
                     spdlog::debug("Powerup");
                     createPowerup(graphics->transform.position + graphics->transform.scale / 2.f);
@@ -381,6 +344,45 @@ void breakout::init()
                     else
                         {
                             physics->velocity.y *= -1.f;
+                        }
+                }
+        });
+
+        m_collisionSystem.subscribe("on player collision", [this] (message &m, int) {
+            void *thisVoid = nullptr;
+            m.arguments[0].cast(thisVoid);
+            collisionComponent *thisCollider = static_cast<collisionComponent*>(thisVoid);
+
+            void *otherVoid = nullptr;
+            m.arguments[1].cast(otherVoid);
+            collisionComponent *other = static_cast<collisionComponent*>(otherVoid);
+
+            if (other->entity->hasTag("powerup"))
+                {
+                    other->entity->kill();
+
+                    if (other->entity->hasTag("multiball"))
+                        {
+                            spdlog::debug("multiball get");
+                            glm::vec2 spawnPos = thisCollider->position + glm::vec2(thisCollider->collider.box.extents.x * 0.5f, -30.f);
+                            createBall(spawnPos, { 0.f, -c_ballSpeed });
+                            createBall(spawnPos, c_ballSpeed * glm::normalize(glm::vec2{ 0.5f, -0.5f }));
+                            createBall(spawnPos, c_ballSpeed * glm::normalize(glm::vec2{ -0.5f, -0.5f }));
+                        }
+                    else if (other->entity->hasTag("shorten"))
+                        {
+                            spdlog::debug("shorten get");
+                            m_playerControlSystem.changePaddleState(*m_player.getComponent<playerControlComponent>("playerControlComponent"), playerControlComponent::paddleState::SHORT);
+                        }
+                    else if (other->entity->hasTag("health"))
+                        {
+                            spdlog::debug("health get");
+                            m_healthSystem.damage(*m_player.getComponent<healthComponent>("health"), -1);
+                        }
+                    else if (other->entity->hasTag("widen"))
+                        {
+                            spdlog::debug("widen get");
+                            m_playerControlSystem.changePaddleState(*m_player.getComponent<playerControlComponent>("playerControlComponent"), playerControlComponent::paddleState::WIDE);
                         }
                 }
         });

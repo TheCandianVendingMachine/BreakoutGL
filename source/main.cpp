@@ -46,7 +46,7 @@ int main()
         c_inputHandler.save("inputs.ini");
 
         constexpr fe::time simulationRate = fe::seconds(1.f / 60.f);
-        constexpr fe::time maxDeltaTime = fe::seconds(3);
+        constexpr fe::time maxDeltaTime = fe::seconds(1);
         fe::clock runClock;
         fe::time lastTime = runClock.getTime();
         fe::time accumulator;
