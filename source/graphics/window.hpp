@@ -39,4 +39,6 @@ class window : public eventSource
 
             void enableCursor(bool enabled);
             void close();
+
+            void setTitle(const char *title);
     };

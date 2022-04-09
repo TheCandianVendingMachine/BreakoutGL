@@ -4,6 +4,7 @@
 #include "graphics/texture.hpp"
 #include "graphics/transformable.hpp"
 #include "graphics/graphicsEngine.hpp"
+#include "graphics/particles/particleRenderer.hpp"
 
 #include "random.hpp"
 #include "clock.hpp"
@@ -32,8 +33,10 @@ int main()
         window app(500, 1000, "Breakout");
         glfwSetInputMode(app.getWindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
+        particleRenderer particles;
+
         graphicsSystem graphicsSystem;
-        graphicsEngine graphicsEngine(app, graphicsSystem);
+        graphicsEngine graphicsEngine(app, graphicsSystem, particles);
 
         globals::g_graphicsSystem = &graphicsSystem;
         globals::g_graphicsEngine = &graphicsEngine;
@@ -42,6 +45,7 @@ int main()
         globals::g_inputs = &c_inputHandler;
 
         c_inputHandler.addDefaultInput("debug", "close", GLFW_KEY_ESCAPE);
+        c_inputHandler.addDefaultInput("debug", "left", GLFW_MOUSE_BUTTON_LEFT);
 
         c_inputHandler.save("inputs.ini");
 
@@ -54,6 +58,12 @@ int main()
         gameStateMachine game;
         game.push<breakout>();
 
+        particles.setClock(runClock);
+
+        constexpr int avgFPSCount = 30;
+        fe::time avgFPS[avgFPSCount];
+        int avgFPSIndex = 0;
+
         while (app.isOpen())
             {
                 fe::time currentTime = runClock.getTime();
@@ -65,11 +75,33 @@ int main()
                 lastTime = currentTime;
                 accumulator += deltaTime;
 
+                avgFPS[avgFPSIndex++] = deltaTime;
+                if (avgFPSIndex >= avgFPSCount) 
+                    {
+                        avgFPSIndex = 0;
+                        fe::time finalAverage;
+                        for (int i = 0; i < avgFPSCount; i++)
+                            {
+                                finalAverage += avgFPS[i];
+                            }
+                        finalAverage /= avgFPSCount;
+                        app.setTitle(fmt::format("fps: {:.0f} : particle count: {}", 1.f / finalAverage.asSeconds(), particles.particleCount()).c_str());
+                    }
+
                 if (globals::g_inputs->keyState("debug", "close") == inputHandler::inputState::PRESS)
                     {
                         app.close();
                     }
 
+                if (globals::g_inputs->mouseState("debug", "left") == inputHandler::inputState::PRESS)
+                    {
+                        for (int i = 0; i < 10000; i++) 
+                            {
+                                particles.addParticle({ 500.f * fe::randomNormal(), 500.f}, {10.f * (1.f - 2.f * fe::randomNormal()), 150.f}, particleAccelerationCurveType::NONE, fe::seconds(1.f + 2.f * fe::randomNormal()));
+                            }
+                    }
+
+                particles.handleDestruction();
                 graphicsSystem.handleDestruction();
 
                 game.preUpdate();

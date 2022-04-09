@@ -2,6 +2,7 @@
 // A class to store time values
 #pragma once
 #include "typeDefines.hpp"
+#include <limits>
 
 namespace fe 
     {
@@ -43,6 +44,8 @@ namespace fe
                     bool operator<(const time &rhs);
                     bool operator<=(const time &rhs);
                     bool operator==(const time &rhs);
+
+                    static constexpr fe::int64 max = std::numeric_limits<fe::int64>::max();
 
             };
 

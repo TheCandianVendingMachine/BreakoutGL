@@ -3,6 +3,7 @@
 #pragma once
 #include <type_traits>
 #include "shader.hpp"
+#include "particles/particleRenderer.hpp"
 
 class camera;
 class window;
@@ -13,6 +14,7 @@ class graphicsEngine
         private:
             tilemapSystem *m_tilemapSystem = nullptr;
             graphicsSystem &m_graphicsSystem;
+            particleRenderer &m_particleSystem;
             window &m_window;
 
             shader m_tilemapShader;
@@ -37,7 +39,7 @@ class graphicsEngine
             friend drawFlags &operator|=(drawFlags &lhs, const drawFlags &rhs) { lhs = lhs | rhs; return lhs; }
             friend drawFlags &operator^=(drawFlags &lhs, const drawFlags &rhs) { lhs = lhs ^ rhs; return lhs; }
 
-            graphicsEngine(window &app, graphicsSystem &graphicsSystem);
+            graphicsEngine(window &app, graphicsSystem &graphicsSystem, particleRenderer &particleSystem);
             void draw(const camera &camera, unsigned int texture = 0, drawFlags flags = drawFlags::ALL) const;
 
             void setTilemap(tilemapSystem *tilemap);

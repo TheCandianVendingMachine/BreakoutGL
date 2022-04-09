@@ -104,3 +104,10 @@ void shader::setMat4(const char *uniform, const glm::mat4 &value) const
         glUniformMatrix4fv(glGetUniformLocation(m_id, uniform), 1, GL_FALSE, glm::value_ptr(value));
     }
 
+void shader::setStorageBuffer(const char* buffer, unsigned int ssbo) const
+    {
+        unsigned int blockIndex = glGetProgramResourceIndex(m_id, GL_SHADER_STORAGE_BLOCK, buffer);
+        glShaderStorageBlockBinding(m_id, blockIndex, blockIndex);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, blockIndex, ssbo);
+    }
+

@@ -17,9 +17,10 @@ void graphicsEngine::createFramebuffers()
     {
     }
 
-graphicsEngine::graphicsEngine(window &app, graphicsSystem &graphicsSystem) :
+graphicsEngine::graphicsEngine(window &app, graphicsSystem &graphicsSystem, particleRenderer &particleSystem) :
     m_window(app),
     m_graphicsSystem(graphicsSystem),
+    m_particleSystem(particleSystem),
     m_2dShader("shaders/basic2d.vs", "shaders/basic2d.fs"),
     m_tilemapShader("shaders/basic2d.vs", "shaders/basic2d.fs")
     {
@@ -60,6 +61,8 @@ void graphicsEngine::draw(const camera &camera, unsigned int texture, drawFlags 
                 graphicComponent.texture.bind(GL_TEXTURE0);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             }
+
+        m_particleSystem.render(camera, texture);
 
         glBindVertexArray(0);
 

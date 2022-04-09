@@ -130,7 +130,7 @@ window::window(int width, int height, const char *title) :
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_window = glfwCreateWindow(m_width, m_height, "Tactical Shooter Prototype", nullptr, nullptr);
+        m_window = glfwCreateWindow(m_width, m_height, title, nullptr, nullptr);
         if (m_window == nullptr)
             {
                 glfwTerminate();
@@ -214,5 +214,10 @@ void window::enableCursor(bool enabled)
 void window::close()
     {
         glfwSetWindowShouldClose(m_window, true);
+    }
+
+void window::setTitle(const char* title)
+    {
+        glfwSetWindowTitle(m_window, title);
     }
 

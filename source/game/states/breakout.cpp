@@ -243,7 +243,7 @@ void breakout::init()
             graphicsComponent *graphics = other->entity->getComponent<graphicsComponent>("graphics");
             other->entity->kill();
 
-            if (fe::randomNormal() < 0.8f)
+            if (fe::randomNormal() < 0.2f)
                 {
                     spdlog::debug("Powerup");
                     createPowerup(graphics->transform.position + graphics->transform.scale / 2.f);

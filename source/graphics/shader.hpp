@@ -24,4 +24,5 @@ class shader
             void setVec2(const char *uniform, const glm::vec2 &value) const;
             void setVec3(const char *uniform, const glm::vec3 &value) const;
             void setMat4(const char *uniform, const glm::mat4 &value) const;
+            void setStorageBuffer(const char *buffer, unsigned int ssbo) const;
     };
