@@ -67,11 +67,6 @@ int main()
         fe::time avgFPS[avgFPSCount];
         int avgFPSIndex = 0;
 
-        for (int i = 0; i < 500'000; i++)
-        {
-            particles.addParticle({ 500.f * fe::randomNormal(), 500.f }, { 10.f * (1.f - 2.f * fe::randomNormal()), 150.f }, particleAccelerationCurveType::NONE, fe::seconds(1.f + 2.f * fe::randomNormal()));
-        }
-
         while (app.isOpen())
             {
                 fe::time currentTime = runClock.getTime();

@@ -6,6 +6,9 @@
 
 #include "threadPool.hpp"
 
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 fe::time particleRenderer::getCurrentTime() const
 	{
 		if (m_gameClock)
@@ -25,6 +28,8 @@ bool particleRenderer::renderParticlesToBuffer(plf::colony<particle>::iterator i
 				ssbo.curve = it->accelerationCurve;
 				ssbo.spawn = it->spawnPosition;
 				ssbo.initialVelocity = it->initialVelocity;
+				ssbo.size = it->size;
+				ssbo.rotation = glm::radians(20.f);
 
 				// manually unrolling loop gains us some frametime
 				cBuffer[offset + 0] = reinterpret_cast<char*>(&ssbo)[0];
@@ -51,6 +56,14 @@ bool particleRenderer::renderParticlesToBuffer(plf::colony<particle>::iterator i
 				cBuffer[offset + 21] = reinterpret_cast<char*>(&ssbo)[21];
 				cBuffer[offset + 22] = reinterpret_cast<char*>(&ssbo)[22];
 				cBuffer[offset + 23] = reinterpret_cast<char*>(&ssbo)[23];
+				cBuffer[offset + 24] = reinterpret_cast<char*>(&ssbo)[24];
+				cBuffer[offset + 25] = reinterpret_cast<char*>(&ssbo)[25];
+				cBuffer[offset + 26] = reinterpret_cast<char*>(&ssbo)[26];
+				cBuffer[offset + 27] = reinterpret_cast<char*>(&ssbo)[27];
+				cBuffer[offset + 28] = reinterpret_cast<char*>(&ssbo)[28];
+				cBuffer[offset + 29] = reinterpret_cast<char*>(&ssbo)[29];
+				cBuffer[offset + 30] = reinterpret_cast<char*>(&ssbo)[30];
+				cBuffer[offset + 31] = reinterpret_cast<char*>(&ssbo)[31];
 
 				offset += sizeof(particleSSBO);
 			}
@@ -89,7 +102,9 @@ particleRenderer::particleRenderer() :
 
 		m_particleVAO.bindVertices({ v0, v1, v2, v3 });
 		m_particleVAO.bindIndices({ 0, 1, 2, 2, 3, 0 });
-		m_particleVAO.use(vertex::attributes::POSITION | vertex::attributes::COLOUR);
+		m_particleVAO.use(vertex::attributes::POSITION | vertex::attributes::TEXTURE);
+
+		m_particleTextureMap.loadFromFile("foo.png", false);
 	}
 
 void particleRenderer::setClock(fe::clock &clock)
@@ -99,12 +114,13 @@ void particleRenderer::setClock(fe::clock &clock)
 
 void particleRenderer::handleDestruction()
 	{
-		if (getCurrentTime() >= m_nextTimeForRemoval)
+		fe::time currentTime = getCurrentTime();
+		if (currentTime >= m_nextTimeForRemoval)
 			{
 				m_nextTimeForRemoval = fe::time::max;
 				for (auto it = m_particles.begin(); it != m_particles.end();)
 					{
-						if (getCurrentTime() >= it->killTime)
+						if (currentTime >= it->killTime)
 							{
 								it = m_particles.erase(it);
 							}
@@ -160,12 +176,14 @@ void particleRenderer::render(const camera &camera, unsigned int texture)
 				m_particleShader.setMat4("projection", camera.projection());
 				m_particleShader.setStorageBuffer("ParticleBuffer", m_particleSSBO);
 
+				m_particleTextureMap.bind(GL_TEXTURE0);
+
 				glBindVertexArray(m_particleVAO.vao);
 				glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_particles.size());
 			}
 	}
 
-void particleRenderer::addParticle(glm::vec2 position, glm::vec2 initialVelocity, particleAccelerationCurveType type, fe::time lifespan)
+void particleRenderer::addParticle(glm::vec2 position, glm::vec2 initialVelocity, particleAccelerationCurveType type, fe::time lifespan, float size)
 	{
 		if (m_particles.size() >= c_maxParticles) { return; }
 
@@ -175,6 +193,7 @@ void particleRenderer::addParticle(glm::vec2 position, glm::vec2 initialVelocity
 		p.spawnPosition = position;
 		p.initialVelocity = initialVelocity;
 		p.accelerationCurve = type;
+		p.size = size;
 
 		if (p.killTime < m_nextTimeForRemoval)
 			{

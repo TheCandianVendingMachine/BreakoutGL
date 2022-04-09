@@ -7,6 +7,7 @@
 #include "particleAccelerationCurveType.hpp"
 #include "clock.hpp"
 #include "threadJob.hpp"
+#include "graphics/texture.hpp"
 #include <array>
 #include <plf_colony.h>
 #include <glm/mat4x4.hpp>
@@ -21,6 +22,8 @@ class particleRenderer
 					glm::vec2 initialVelocity = { 0.f, 0.f };
 					unsigned int runtime = 0;
 					particleAccelerationCurveType curve = particleAccelerationCurveType::NONE;
+					float size = 1.f;
+					float rotation = 0.f;
 				};
 
 			unsigned int m_particleSSBO = 0;
@@ -33,6 +36,7 @@ class particleRenderer
 			vertexArray m_particleVAO;
 
 			shader m_particleShader;
+			texture m_particleTextureMap;
 
 			std::array<fe::threadFunction, 16> m_particleRenderThreads;
 
@@ -48,6 +52,7 @@ class particleRenderer
 			void handleDestruction();
 			void render(const camera &camera, unsigned int texture);
 
-			void addParticle(glm::vec2 position, glm::vec2 initialVelocity, particleAccelerationCurveType type, fe::time lifespan);
+			void addParticle(glm::vec2 position, glm::vec2 initialVelocity, particleAccelerationCurveType type, fe::time lifespan, float size);
 			unsigned int particleCount() const;
 	};
+

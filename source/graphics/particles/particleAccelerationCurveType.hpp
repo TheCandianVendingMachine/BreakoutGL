@@ -2,7 +2,8 @@
 // Defines an enum of possible acceleration curves a particle can use
 #pragma once
 
-enum class particleAccelerationCurveType : char 
+enum class particleAccelerationCurveType : int 
 	{
-		NONE = 0
+		NONE = 0,
+		GRAVITY,
 	};

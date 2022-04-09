@@ -2,6 +2,7 @@
 // defines a particle in space. contains transform matrix, and lifespan
 #pragma once
 #include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 #include "time.hpp"
 #include "particleAccelerationCurveType.hpp"
 
@@ -12,4 +13,5 @@ struct particle
 		fe::time spawnTime = fe::seconds(0);
 		fe::time killTime = fe::seconds(0);
 		particleAccelerationCurveType accelerationCurve = particleAccelerationCurveType::NONE;
+		float size = 1.f;
 	};
