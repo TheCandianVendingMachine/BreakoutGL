@@ -4,6 +4,8 @@
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/spdlog.h>
 
+#include "threadPool.hpp"
+
 fe::time particleRenderer::getCurrentTime() const
 	{
 		if (m_gameClock)
@@ -11,6 +13,48 @@ fe::time particleRenderer::getCurrentTime() const
 				return m_gameClock->getTime();
 			}
 		return m_internalClock.getTime();
+	}
+
+bool particleRenderer::renderParticlesToBuffer(plf::colony<particle>::iterator itBegin, plf::colony<particle>::iterator itEnd, int offset, char*& cBuffer) const
+	{
+		fe::time now = getCurrentTime();
+		for (auto it = itBegin; it < itEnd; ++it)
+			{
+				particleSSBO ssbo;
+				ssbo.runtime = now.thisTime - it->spawnTime.thisTime;
+				ssbo.curve = it->accelerationCurve;
+				ssbo.spawn = it->spawnPosition;
+				ssbo.initialVelocity = it->initialVelocity;
+
+				// manually unrolling loop gains us some frametime
+				cBuffer[offset + 0] = reinterpret_cast<char*>(&ssbo)[0];
+				cBuffer[offset + 1] = reinterpret_cast<char*>(&ssbo)[1];
+				cBuffer[offset + 2] = reinterpret_cast<char*>(&ssbo)[2];
+				cBuffer[offset + 3] = reinterpret_cast<char*>(&ssbo)[3];
+				cBuffer[offset + 4] = reinterpret_cast<char*>(&ssbo)[4];
+				cBuffer[offset + 5] = reinterpret_cast<char*>(&ssbo)[5];
+				cBuffer[offset + 6] = reinterpret_cast<char*>(&ssbo)[6];
+				cBuffer[offset + 7] = reinterpret_cast<char*>(&ssbo)[7];
+				cBuffer[offset + 8] = reinterpret_cast<char*>(&ssbo)[8];
+				cBuffer[offset + 9] = reinterpret_cast<char*>(&ssbo)[9];
+				cBuffer[offset + 10] = reinterpret_cast<char*>(&ssbo)[10];
+				cBuffer[offset + 11] = reinterpret_cast<char*>(&ssbo)[11];
+				cBuffer[offset + 12] = reinterpret_cast<char*>(&ssbo)[12];
+				cBuffer[offset + 13] = reinterpret_cast<char*>(&ssbo)[13];
+				cBuffer[offset + 14] = reinterpret_cast<char*>(&ssbo)[14];
+				cBuffer[offset + 15] = reinterpret_cast<char*>(&ssbo)[15];
+				cBuffer[offset + 16] = reinterpret_cast<char*>(&ssbo)[16];
+				cBuffer[offset + 17] = reinterpret_cast<char*>(&ssbo)[17];
+				cBuffer[offset + 18] = reinterpret_cast<char*>(&ssbo)[18];
+				cBuffer[offset + 19] = reinterpret_cast<char*>(&ssbo)[19];
+				cBuffer[offset + 20] = reinterpret_cast<char*>(&ssbo)[20];
+				cBuffer[offset + 21] = reinterpret_cast<char*>(&ssbo)[21];
+				cBuffer[offset + 22] = reinterpret_cast<char*>(&ssbo)[22];
+				cBuffer[offset + 23] = reinterpret_cast<char*>(&ssbo)[23];
+
+				offset += sizeof(particleSSBO);
+			}
+		return true;
 	}
 
 particleRenderer::particleRenderer() :
@@ -80,19 +124,33 @@ void particleRenderer::render(const camera &camera, unsigned int texture)
 	{
 		if (!m_particles.empty())
 			{
-				std::vector<particleSSBO> ssboParticles(m_particles.size());
-				int i = 0;
-				for (auto &particle : m_particles)
-					{
-						ssboParticles[i].curve = particle.accelerationCurve;
-						ssboParticles[i].spawn = particle.spawnPosition;
-						ssboParticles[i].initialVelocity = particle.initialVelocity;
-						ssboParticles[i].runtime = (getCurrentTime() - particle.spawnTime).asSeconds();
-						i++;
-					}
 				glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_particleSSBO);
-				void* buffer = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
-				std::memcpy(buffer, ssboParticles.data(), ssboParticles.size() * sizeof(particleSSBO));
+				void *buffer = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+				char *cBuffer = reinterpret_cast<char*>(buffer);
+				
+				if (m_particles.size() > 1'000'000) 
+					{
+						int i = 0;
+						int particleFraction = m_particles.size() / m_particleRenderThreads.size();
+						for (auto &particleThread : m_particleRenderThreads)
+							{
+								plf::colony<particle>::iterator itBegin = m_particles.begin();
+								plf::colony<particle>::iterator itEnd = m_particles.begin(); std::advance(itEnd, 1 * particleFraction);
+
+								particleThread = fe::threadFunction(std::bind(&particleRenderer::renderParticlesToBuffer, this, itBegin, itEnd, sizeof(particleSSBO) * i * particleFraction, cBuffer));
+								globals::g_threadPool->addJob(particleThread);
+							}
+						
+						for (auto& particleThread : m_particleRenderThreads) 
+							{
+								globals::g_threadPool->waitFor(particleThread);
+							}
+					}
+				else
+					{
+						renderParticlesToBuffer(m_particles.begin(), m_particles.end(), 0, cBuffer);
+					}
+				
 				glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 				glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 

@@ -6,6 +6,7 @@
 #include "graphics/graphicsEngine.hpp"
 #include "graphics/particles/particleRenderer.hpp"
 
+#include "threadPool.hpp"
 #include "random.hpp"
 #include "clock.hpp"
 #include "time.hpp"
@@ -25,6 +26,8 @@
 int main()
     {
         spdlog::set_level(spdlog::level::debug);
+        globals::commonThreadPool threadPool;
+        globals::g_threadPool = &threadPool;
 
         fe::randomImpl c_generator{};
         c_generator.startUp();
@@ -60,9 +63,14 @@ int main()
 
         particles.setClock(runClock);
 
-        constexpr int avgFPSCount = 30;
+        constexpr int avgFPSCount = 5;
         fe::time avgFPS[avgFPSCount];
         int avgFPSIndex = 0;
+
+        for (int i = 0; i < 500'000; i++)
+        {
+            particles.addParticle({ 500.f * fe::randomNormal(), 500.f }, { 10.f * (1.f - 2.f * fe::randomNormal()), 150.f }, particleAccelerationCurveType::NONE, fe::seconds(1.f + 2.f * fe::randomNormal()));
+        }
 
         while (app.isOpen())
             {
@@ -95,10 +103,10 @@ int main()
 
                 if (globals::g_inputs->mouseState("debug", "left") == inputHandler::inputState::PRESS)
                     {
-                        for (int i = 0; i < 10000; i++) 
+                        /*for (int i = 0; i < 10000; i++)
                             {
                                 particles.addParticle({ 500.f * fe::randomNormal(), 500.f}, {10.f * (1.f - 2.f * fe::randomNormal()), 150.f}, particleAccelerationCurveType::NONE, fe::seconds(1.f + 2.f * fe::randomNormal()));
-                            }
+                            }*/
                     }
 
                 particles.handleDestruction();

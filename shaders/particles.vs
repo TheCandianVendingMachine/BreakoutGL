@@ -10,7 +10,7 @@ uniform mat4 projection;
 struct ParticleData {
     vec2 spawn;
     vec2 initialVelocity;
-    float runtime;
+    uint runtime; // time this particle has been alive in microseconds
     int accelerationType;
 };
 
@@ -23,7 +23,7 @@ out vec2 TextureCoord;
 
 void main() {
     vec2 currentOffset = particleData[gl_InstanceID].spawn;
-    currentOffset += particleData[gl_InstanceID].initialVelocity * particleData[gl_InstanceID].runtime;
+    currentOffset += particleData[gl_InstanceID].initialVelocity * (float(particleData[gl_InstanceID].runtime) / 1000000.0);
 
     gl_Position = projection * view * vec4(aPosition.xy + currentOffset, 0.0, 1.0);
 

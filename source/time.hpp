@@ -13,14 +13,26 @@ namespace fe
                     fe::int64 m_time;
 
                 public:
+                    const fe::int64 &thisTime = m_time;
+
                     constexpr time() : m_time(0) {}
                     constexpr time(long long time) : m_time(time) {}
                     time(const time &time) noexcept;
                     time(const time &&time) noexcept;
 
-                    double asSeconds() const;
-                    fe::int64 asMilliseconds() const;
-                    fe::int64 asMicroseconds() const;
+                    constexpr double asSeconds() const 
+                        {
+                            // 0.000001 = 1e-6
+                            return static_cast<double>(m_time) / 1'000'000;
+                        }
+                    constexpr fe::int64 asMilliseconds() const
+                        {
+                            return m_time / 1000;
+                        }
+                    constexpr fe::int64 asMicroseconds() const
+                        {
+                            return m_time;
+                        }
 
                     time operator+(const time &rhs) const;
                     time operator-(const time & rhs) const;
