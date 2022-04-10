@@ -119,20 +119,12 @@ int main()
                                 finalAverage += avgFPS[i];
                             }
                         finalAverage /= avgFPSCount;
-                        app.setTitle(fmt::format("fps: {:.0f} : particle count: {}", 1.f / finalAverage.asSeconds(), particles.particleCount()).c_str());
+                        //app.setTitle(fmt::format("fps: {:.0f} : particle count: {}", 1.f / finalAverage.asSeconds(), particles.particleCount()).c_str());
                     }
 
                 if (globals::g_inputs->keyState("debug", "close") == inputHandler::inputState::PRESS)
                     {
                         app.close();
-                    }
-
-                if (globals::g_inputs->mouseState("debug", "left") == inputHandler::inputState::PRESS)
-                    {
-                        /*for (int i = 0; i < 10000; i++)
-                            {
-                                particles.addParticle({ 500.f * fe::randomNormal(), 500.f}, {10.f * (1.f - 2.f * fe::randomNormal()), 150.f}, particleAccelerationCurveType::NONE, fe::seconds(1.f + 2.f * fe::randomNormal()));
-                            }*/
                     }
 
                 particles.handleDestruction();

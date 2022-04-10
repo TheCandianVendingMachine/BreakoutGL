@@ -297,7 +297,7 @@ void breakout::init()
                         collisionPoint,
                         50.f * particleVelocity,
                         glm::vec2{ 0.f, 0.f },
-                        30.f * particleVelocity,
+                        30.f * glm::abs(particleVelocity),
                         fe::seconds(3).asMicroseconds(),
                         2.f,
                         static_cast<int>(particleAccelerationCurveType::GRAVITY)
