@@ -81,6 +81,8 @@ particleRenderer::particleRenderer() :
 		glGenBuffers(1, &m_particleSSBO);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_particleSSBO);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, c_maxParticles * sizeof(particleSSBO), 0, GL_STREAM_DRAW);
+		glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+		glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 		spdlog::info("buffer {}", m_particleSSBO);
 
