@@ -3,6 +3,7 @@
 #include "graphics/graphicsEngine.hpp"
 #include "inputHandler.hpp"
 #include "random.hpp"
+#include "messaging/globalEventHandler.hpp"
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
 
@@ -277,9 +278,27 @@ void breakout::init()
             void *otherVoid = nullptr;
             m.arguments[1].cast(otherVoid);
             collisionComponent *otherCollider = static_cast<collisionComponent *>(otherVoid);
+
+            glm::vec2 collisionPoint;
+            m.arguments[2].cast(collisionPoint);
+
             if (otherCollider->entity->hasTag("ball"))
                 {
+                    glm::vec2 ballVelocity = otherCollider->entity->getComponent<physicsComponent>("physics")->velocity;
+                    glm::vec2 particleVelocity = glm::normalize(glm::vec2(ballVelocity.x, -ballVelocity.y));
+
                     m_healthSystem.damage(*thisCollider->entity->getComponent<healthComponent>("health"), 1);
+                    globals::g_globalEventHandler->signal(message(
+                        FE_STR("spawn particles"),
+                        50,
+                        collisionPoint,
+                        50.f * particleVelocity,
+                        glm::vec2{ 0.f, 0.f },
+                        30.f * particleVelocity,
+                        fe::seconds(3).asMicroseconds(),
+                        2.f,
+                        static_cast<int>(particleAccelerationCurveType::GRAVITY)
+                    ));
                 }
         });
 

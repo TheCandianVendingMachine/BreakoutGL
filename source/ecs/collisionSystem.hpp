@@ -15,7 +15,7 @@ class collisionSystem : public eventSource
 
             plf::colony<collisionComponent> m_colliders;
 
-            void collision(collisionComponent &a, collisionComponent &b);
+            void collision(collisionComponent &a, collisionComponent &b, glm::vec2 collisionPoint);
 
             void testCircleCollision(collisionComponent &circle, collisionComponent &b);
             void testBoxCollision(collisionComponent &box, collisionComponent &b);

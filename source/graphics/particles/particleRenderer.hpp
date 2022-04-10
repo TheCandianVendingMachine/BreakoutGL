@@ -24,7 +24,10 @@ class particleRenderer
 					particleAccelerationCurveType curve = particleAccelerationCurveType::NONE;
 					float size = 1.f;
 					float rotation = 0.f;
+					unsigned int lifeSpan = 0;
 				};
+			static constexpr int c_particleSSBOAlignment = 8;
+			static constexpr int c_particleSSBOOffset = c_particleSSBOAlignment + sizeof(particleSSBO) - sizeof(particleSSBO) % c_particleSSBOAlignment;
 
 			unsigned int m_particleSSBO = 0;
 

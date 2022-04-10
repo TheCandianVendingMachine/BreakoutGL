@@ -1,7 +1,7 @@
 #include "collisionSystem.hpp"
 #include <glm/glm.hpp>
 
-void collisionSystem::collision(collisionComponent &a, collisionComponent &b)
+void collisionSystem::collision(collisionComponent &a, collisionComponent &b, glm::vec2 collisionPoint)
     {
         bool firstCollision = m_collisionPairsLastCheck.find(a.uid) == m_collisionPairsLastCheck.end() || m_collisionPairsLastCheck.at(a.uid).find(b.uid) == m_collisionPairsLastCheck.at(a.uid).end();
 
@@ -9,10 +9,10 @@ void collisionSystem::collision(collisionComponent &a, collisionComponent &b)
         // change if better collision handling implemented
         if (firstCollision)
             {
-                signal(message(a.eventOnCollisionStart, &a, &b));
+                signal(message(a.eventOnCollisionStart, &a, &b, collisionPoint));
             }
 
-        signal(message(a.eventOnCollision, &a, &b));
+        signal(message(a.eventOnCollision, &a, &b, collisionPoint));
 
         m_collisionPairsThisCheck[a.uid].insert(b.uid);
         m_collisionPairsThisCheck[b.uid].insert(a.uid);
@@ -25,13 +25,15 @@ void collisionSystem::testCircleCollision(collisionComponent &circle, collisionC
                 case collisionComponent::type::CIRCLE:
                     if (circleCircleTest(circle, b))
                         {
-                            collision(circle, b);
+                            collision(circle, b, (circle.position + b.position) / 2.f);
                         }
                     break;
                 case collisionComponent::type::BOX:
                     if (circleBoxTest(circle, b))
                         {
-                            collision(circle, b);
+                            glm::vec2 min = b.position;
+                            glm::vec2 max = min + b.collider.box.extents;
+                            collision(circle, b, glm::min(glm::max(circle.position, min), max));
                         }
                     break;
                 default:
@@ -46,13 +48,15 @@ void collisionSystem::testBoxCollision(collisionComponent &box, collisionCompone
                 case collisionComponent::type::CIRCLE:
                     if (circleBoxTest(b, box))
                         {
-                            collision(box, b);
+                            glm::vec2 min = box.position;
+                            glm::vec2 max = min + box.collider.box.extents;
+                            collision(box, b, glm::min(glm::max(b.position, min), max));
                         }
                     break;
                 case collisionComponent::type::BOX:
                     if (boxBoxTest(box, b))
                         {
-                            collision(box, b);
+                            collision(box, b, glm::vec2(0));
                         }
                     break;
                 default:

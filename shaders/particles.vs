@@ -6,6 +6,9 @@ layout (location = 3) in vec2 aTextureCoord;
 uniform mat4 view;
 uniform mat4 projection;
 
+out vec2 TextureCoord;
+out float PercentLived;
+
 struct ParticleData {
     vec2 spawn;
     vec2 initialVelocity;
@@ -13,13 +16,12 @@ struct ParticleData {
     int accelerationType;
     float size;
     float rotation;
+    uint lifeSpan;
 };
 
 layout(std430) readonly buffer ParticleBuffer {
     ParticleData particleData[];
 };
-
-out vec2 TextureCoord;
 
 vec2 accelTypeNone(ParticleData particle)
 {
@@ -29,7 +31,7 @@ vec2 accelTypeNone(ParticleData particle)
 vec2 accelTypeGravity(ParticleData particle)
 {
     float runtime = float(particle.runtime) / 1000000.0;
-    return particle.spawn + particle.initialVelocity * runtime + 0.5 * vec2(0, 50) * runtime * runtime;
+    return particle.spawn + particle.initialVelocity * runtime + 0.5 * vec2(0, 100) * runtime * runtime;
 }
 
 void main() {
@@ -55,4 +57,5 @@ void main() {
     gl_Position = projection * view * vec4(finalPosition + currentOffset, 0.0, 1.0);
 
     TextureCoord = vec2(aTextureCoord.x, 1.0 - aTextureCoord.y);
+    PercentLived = float(workingParticle.runtime) / float(workingParticle.lifeSpan);
 }

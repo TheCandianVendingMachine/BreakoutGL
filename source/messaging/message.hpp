@@ -5,6 +5,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include "typeDefines.hpp"
+#include "time.hpp"
 
 struct message
     {
@@ -18,6 +19,7 @@ struct message
                         bool BOOL;
                         glm::vec2 VEC2;
                         glm::vec3 VEC3;
+                        std::int64_t INT64;
                         void *USER_DATA;
                     } variable;
 
@@ -33,10 +35,11 @@ struct message
                         BOOL,
                         VEC2,
                         VEC3,
+                        INT64,
                         USER_DATA
                     } variableType = type::NONE;
 
-                argument() { variable.INT = 0; };
+                argument()                          { variable.INT = 0; };
                 argument(int arg)					{ variable.INT = arg;		variableType = type::INT; }
                 argument(float arg)					{ variable.FLOAT = arg;		variableType = type::FLOAT; }
                 argument(double arg)				{ variable.DOUBLE = arg;	variableType = type::DOUBLE; }
@@ -45,6 +48,7 @@ struct message
                 argument(glm::vec3 arg)				{ variable.VEC3 = arg;		variableType = type::VEC3; }
                 argument(void *arg)					{ variable.USER_DATA = arg;	variableType = type::USER_DATA; }
                 argument(void *arg, void *metaData) { variable.USER_DATA = arg;	variableType = type::USER_DATA; this->metaData = metaData; }
+                argument(std::int64_t arg)          { variable.INT64 = arg;      variableType = type::INT64; }
 
                 bool cast(int &in)
                     {
@@ -101,6 +105,16 @@ struct message
                         if (variableType == type::VEC3)
                             {
                                 in = variable.VEC3;
+                                return true;
+                            }
+                        return false;
+                    }
+
+                bool cast(std::int64_t& in)
+                    {
+                        if (variableType == type::INT64)
+                            {
+                                in = variable.INT64;
                                 return true;
                             }
                         return false;

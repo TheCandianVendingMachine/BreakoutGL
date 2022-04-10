@@ -30,6 +30,7 @@ bool particleRenderer::renderParticlesToBuffer(plf::colony<particle>::iterator i
 				ssbo.initialVelocity = it->initialVelocity;
 				ssbo.size = it->size;
 				ssbo.rotation = glm::radians(20.f);
+				ssbo.lifeSpan = it->killTime.thisTime - it->spawnTime.thisTime;
 
 				// manually unrolling loop gains us some frametime
 				cBuffer[offset + 0] = reinterpret_cast<char*>(&ssbo)[0];
@@ -64,8 +65,12 @@ bool particleRenderer::renderParticlesToBuffer(plf::colony<particle>::iterator i
 				cBuffer[offset + 29] = reinterpret_cast<char*>(&ssbo)[29];
 				cBuffer[offset + 30] = reinterpret_cast<char*>(&ssbo)[30];
 				cBuffer[offset + 31] = reinterpret_cast<char*>(&ssbo)[31];
+				cBuffer[offset + 32] = reinterpret_cast<char*>(&ssbo)[32];
+				cBuffer[offset + 33] = reinterpret_cast<char*>(&ssbo)[33];
+				cBuffer[offset + 34] = reinterpret_cast<char*>(&ssbo)[34];
+				cBuffer[offset + 35] = reinterpret_cast<char*>(&ssbo)[35];
 
-				offset += sizeof(particleSSBO);
+				offset += c_particleSSBOOffset;
 			}
 		return true;
 	}
@@ -151,10 +156,13 @@ void particleRenderer::render(const camera &camera, unsigned int texture)
 						for (auto &particleThread : m_particleRenderThreads)
 							{
 								plf::colony<particle>::iterator itBegin = m_particles.begin();
-								plf::colony<particle>::iterator itEnd = m_particles.begin(); std::advance(itEnd, 1 * particleFraction);
+								plf::colony<particle>::iterator itEnd = m_particles.begin(); std::advance(itEnd, i * particleFraction);
 
-								particleThread = fe::threadFunction(std::bind(&particleRenderer::renderParticlesToBuffer, this, itBegin, itEnd, sizeof(particleSSBO) * i * particleFraction, cBuffer));
+								int alignment = sizeof(particleSSBO) * i * particleFraction;
+								particleThread = fe::threadFunction(std::bind(&particleRenderer::renderParticlesToBuffer, this, itBegin, itEnd, i * particleFraction * c_particleSSBOOffset, cBuffer));
 								globals::g_threadPool->addJob(particleThread);
+
+								i++;
 							}
 						
 						for (auto& particleThread : m_particleRenderThreads) 
