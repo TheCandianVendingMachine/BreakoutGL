@@ -43,6 +43,7 @@ void breakout::createPowerup(glm::vec2 brickCenter)
         graphicsComponent &graphics = powerup.addComponent<graphicsComponent>(globals::g_graphicsSystem->create());
         graphics.transform.scale = { 50, 30 };
         graphics.transform.position = brickCenter - graphics.transform.scale * 0.5f;
+        globals::g_graphicsSystem->setZLayer(graphics, 2);
 
         physicsComponent &physics = powerup.addComponent<physicsComponent>(m_physics.create());
         physics.position = brickCenter - graphics.transform.scale * 0.5f;
@@ -210,6 +211,8 @@ void breakout::init()
                         brickGraphic.transform.scale = { blockWidth, blockHeight };
                         brickGraphic.colour = { 1.f, 0.f, 0.2f };
                         brickGraphic.transform.position = { x * blockWidth + xBuffer + blockGap * x, y * blockHeight + yBuffer + blockGap * y};
+
+                        globals::g_graphicsSystem->setZLayer(brickGraphic, 1);
 
                         collisionComponent &brickCollision = brick.addComponent<collisionComponent>(m_collisionSystem.create(collisionComponent::type::BOX, "brick hit", ""));
                         brickCollision.collider.box.extents = { blockWidth, blockHeight };

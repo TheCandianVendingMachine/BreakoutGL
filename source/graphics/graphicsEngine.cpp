@@ -49,20 +49,31 @@ void graphicsEngine::draw(const camera &camera, unsigned int texture, drawFlags 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+        m_particleSystem.render(camera, texture);
+
         m_2dShader.use();
         m_2dShader.setMat4("view", camera.view());
         m_2dShader.setMat4("projection", camera.projection());
 
         glBindVertexArray(m_graphicsSystem.m_spriteQuad.vao);
+
+        int maxZ = m_graphicsSystem.maxZLayer();
+        std::vector<std::vector<const graphicsComponent*>> zOrderedGraphics(maxZ + 1);
         for (const auto &graphicComponent : m_graphicsSystem.m_graphicComponents) 
             {
-                m_2dShader.setVec3("DefinedColour", graphicComponent.colour);
-                m_2dShader.setMat4("model", graphicComponent.transform.transform());
-                graphicComponent.texture.bind(GL_TEXTURE0);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                zOrderedGraphics[maxZ - graphicComponent.zOrder].push_back(&graphicComponent);
             }
 
-        m_particleSystem.render(camera, texture);
+        for (auto &layer : zOrderedGraphics)
+            {
+                for (const auto& graphicComponent : layer) 
+                    {
+                        m_2dShader.setVec3("DefinedColour", graphicComponent->colour);
+                        m_2dShader.setMat4("model", graphicComponent->transform.transform());
+                        graphicComponent->texture.bind(GL_TEXTURE0);
+                        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                    }
+            }
 
         glBindVertexArray(0);
 

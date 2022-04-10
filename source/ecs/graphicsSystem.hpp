@@ -11,6 +11,8 @@ class graphicsSystem
             plf::colony<graphicsComponent> m_graphicComponents;
             vertexArray m_spriteQuad;
 
+            int m_maxZLayer = 0;
+
             friend class graphicsEngine;
 
         public:
@@ -18,6 +20,9 @@ class graphicsSystem
 
             graphicsComponent &create();
             void handleDestruction();
+
+            void setZLayer(graphicsComponent& component, int zLayer);
+            int maxZLayer() const;
 
     };
 

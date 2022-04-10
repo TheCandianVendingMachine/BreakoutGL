@@ -14,4 +14,5 @@ struct graphicsComponent : component
         transformable transform;
         texture texture;
         glm::vec3 colour = { 1.f, 1.f, 1.f };
+        int zOrder = 0;
     };

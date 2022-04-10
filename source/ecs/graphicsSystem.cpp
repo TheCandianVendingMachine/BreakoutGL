@@ -1,4 +1,5 @@
 #include "graphicsSystem.hpp"
+#include <algorithm>
 
 graphicsSystem *globals::g_graphicsSystem = nullptr;
 
@@ -48,4 +49,15 @@ void graphicsSystem::handleDestruction()
                         it++;
                     }
             }
+    }
+
+void graphicsSystem::setZLayer(graphicsComponent& component, int zLayer)
+    {
+        component.zOrder = zLayer;
+        m_maxZLayer = std::max(m_maxZLayer, zLayer);
+    }
+
+int graphicsSystem::maxZLayer() const
+    {
+        return m_maxZLayer;
     }
