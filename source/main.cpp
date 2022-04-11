@@ -18,14 +18,55 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <fmod_studio.hpp>
+#include <fmod_errors.h>
 
 #include "ecs/graphicsSystem.hpp"
 
 #include "game/states/gameStateMachine.hpp"
 #include "game/states/breakout.hpp"
 
+template<unsigned int averageCount>
+struct fpsLogger
+    {
+        fe::clock timer;
+        fe::time fpsCounter[averageCount];
+        unsigned int currentCounterIndex = 0;
+
+        void newFrame()
+            {
+                currentCounterIndex = (currentCounterIndex + 1) % averageCount;
+                fpsCounter[currentCounterIndex] = timer.getTime();
+
+                timer.restart();
+            }
+
+        double getFPS() const
+            {
+                fe::time averageFPS;
+                for (unsigned int i = 0; i < currentCounterIndex; i++)
+                    {
+                        averageFPS += fpsCounter[currentCounterIndex];
+                    }
+                double frameTime = averageFPS.asSeconds();
+                return static_cast<double>(currentCounterIndex) / frameTime;
+            }
+
+    };
+
+void fmodVerify(FMOD_RESULT result)
+    {
+        if (result != FMOD_OK)
+            {
+                spdlog::error("FMOD error: ({}) {}", result, FMOD_ErrorString(result));
+                std::terminate();
+            }
+    }
+
 int main()
     {
+        fpsLogger<16> fpsCounter;
+
         spdlog::set_level(spdlog::level::debug);
         globals::commonThreadPool threadPool;
         globals::g_threadPool = &threadPool;
@@ -36,6 +77,12 @@ int main()
         fe::randomImpl c_generator{};
         c_generator.startUp();
         c_generator.seed(1337);
+
+        FMOD_RESULT result;
+        FMOD::Studio::System* system = nullptr;
+
+        fmodVerify(FMOD::Studio::System::create(&system));
+        fmodVerify(system->initialize(512, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, nullptr));
 
         window app(500, 1000, "Breakout");
         glfwSetInputMode(app.getWindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
@@ -94,12 +141,10 @@ int main()
 
         particles.setClock(runClock);
 
-        constexpr int avgFPSCount = 5;
-        fe::time avgFPS[avgFPSCount];
-        int avgFPSIndex = 0;
-
         while (app.isOpen())
             {
+                fpsCounter.newFrame();
+
                 fe::time currentTime = runClock.getTime();
                 fe::time deltaTime = currentTime - lastTime;
                 if (deltaTime >= maxDeltaTime)
@@ -109,23 +154,12 @@ int main()
                 lastTime = currentTime;
                 accumulator += deltaTime;
 
-                avgFPS[avgFPSIndex++] = deltaTime;
-                if (avgFPSIndex >= avgFPSCount) 
-                    {
-                        avgFPSIndex = 0;
-                        fe::time finalAverage;
-                        for (int i = 0; i < avgFPSCount; i++)
-                            {
-                                finalAverage += avgFPS[i];
-                            }
-                        finalAverage /= avgFPSCount;
-                        //app.setTitle(fmt::format("fps: {:.0f} : particle count: {}", 1.f / finalAverage.asSeconds(), particles.particleCount()).c_str());
-                    }
-
                 if (globals::g_inputs->keyState("debug", "close") == inputHandler::inputState::PRESS)
                     {
                         app.close();
                     }
+
+                fmodVerify(system->update());
 
                 particles.handleDestruction();
                 graphicsSystem.handleDestruction();
@@ -149,6 +183,8 @@ int main()
 
                 app.pollEvents();
             }
+
+        fmodVerify(system->release());
 
         return 0;
     }
