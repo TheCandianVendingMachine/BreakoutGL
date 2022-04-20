@@ -7,6 +7,8 @@
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
 
+#include "sound/soundSystem.hpp"
+
 void breakout::createBall(glm::vec2 spawn, glm::vec2 velocity)
     {
         entity &ball = *m_balls.emplace();
@@ -325,6 +327,8 @@ void breakout::init()
                             direction.x = fe::randomNormal(-0.2f, 0.2f);
                         }
                     physics->velocity = -direction * c_ballSpeed;
+
+                    globals::g_audioSystem->play("event:/ball_hit_paddle");
                 }
             else if (other->entity->hasTag("wall"))
                 {
@@ -348,6 +352,8 @@ void breakout::init()
                                     physics->position.x = wallXPos - thisCollider->collider.circle.radius;
                                 }
                         }
+
+                    globals::g_audioSystem->play("event:/ball_hit_wall");
                 }
             else if (other->entity->hasTag("brick"))
                 {
@@ -367,6 +373,8 @@ void breakout::init()
                         {
                             physics->velocity.y *= -1.f;
                         }
+
+                    globals::g_audioSystem->play("event:/ball_hit_wall");
                 }
         });
 

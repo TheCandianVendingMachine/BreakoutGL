@@ -18,13 +18,13 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <fmod_studio.hpp>
-#include <fmod_errors.h>
 
 #include "ecs/graphicsSystem.hpp"
 
 #include "game/states/gameStateMachine.hpp"
 #include "game/states/breakout.hpp"
+
+#include "sound/soundSystem.hpp"
 
 template<unsigned int averageCount>
 struct fpsLogger
@@ -54,15 +54,6 @@ struct fpsLogger
 
     };
 
-void fmodVerify(FMOD_RESULT result)
-    {
-        if (result != FMOD_OK)
-            {
-                spdlog::error("FMOD error: ({}) {}", result, FMOD_ErrorString(result));
-                std::terminate();
-            }
-    }
-
 int main()
     {
         fpsLogger<16> fpsCounter;
@@ -74,15 +65,12 @@ int main()
         globalEventHandler globalEvents;
         globals::g_globalEventHandler = &globalEvents;
 
+        soundSystem audioEngine;
+        globals::g_audioSystem = &audioEngine;
+
         fe::randomImpl c_generator{};
         c_generator.startUp();
         c_generator.seed(1337);
-
-        FMOD_RESULT result;
-        FMOD::Studio::System* system = nullptr;
-
-        fmodVerify(FMOD::Studio::System::create(&system));
-        fmodVerify(system->initialize(512, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, nullptr));
 
         window app(500, 1000, "Breakout");
         glfwSetInputMode(app.getWindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
@@ -159,7 +147,7 @@ int main()
                         app.close();
                     }
 
-                fmodVerify(system->update());
+                audioEngine.update();
 
                 particles.handleDestruction();
                 graphicsSystem.handleDestruction();
@@ -183,8 +171,6 @@ int main()
 
                 app.pollEvents();
             }
-
-        fmodVerify(system->release());
 
         return 0;
     }
