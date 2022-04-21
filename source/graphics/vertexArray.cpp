@@ -51,13 +51,12 @@ void vertexArray::bindVertices(const std::vector<vertex> &vertices)
     {
         m_vertexCount = static_cast<unsigned int>(vertices.size());
 
-        if (m_vbo != 0)
+        if (m_vbo == 0)
             {
-                spdlog::warn("Binding VBO to vertexArray with an already bound VBO");
+                glGenBuffers(1, &m_vbo);
             }
 
         glBindVertexArray(m_vao);
-        glGenBuffers(1, &m_vbo);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
         glBufferData(GL_ARRAY_BUFFER, m_vertexCount * sizeof(vertex), vertices.data(), m_usage);
@@ -83,13 +82,12 @@ void vertexArray::bindIndices(const std::vector<unsigned int> &indices)
     {
         m_indexCount = static_cast<unsigned int>(indices.size());
 
-        if (m_ebo != 0)
+        if (m_ebo == 0)
             {
-                spdlog::warn("Binding EBO to vertexArray with an already bound EBO");
+                glGenBuffers(1, &m_ebo);
             }
 
         glBindVertexArray(m_vao);
-        glGenBuffers(1, &m_ebo);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indexCount * sizeof(unsigned int), indices.data(), m_usage);
