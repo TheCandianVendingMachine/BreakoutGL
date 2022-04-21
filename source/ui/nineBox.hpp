@@ -24,10 +24,19 @@ class nineBox
 		public:
 			const glm::vec2 &size = m_size;
 			const glm::vec4 &colour = m_colour;
+			const texture &texture = m_texture;
 			
-			nineBox(texture texture, unsigned int chunkSize);
+			nineBox() = default;
+			nineBox(::texture texture, unsigned int chunkSize);
 			nineBox(const char* texturePath, unsigned int chunkSize);
+
+			nineBox(const nineBox &rhs);
+			nineBox(nineBox &&rhs) noexcept;
+
 			~nineBox();
+
+			nineBox &operator=(const nineBox &rhs);
+			nineBox &operator=(nineBox &&rhs) noexcept;
 
 			void setSize(glm::vec2 size);
 			void setColour(glm::vec3 colour);

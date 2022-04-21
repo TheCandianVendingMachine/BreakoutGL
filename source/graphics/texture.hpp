@@ -33,7 +33,7 @@ class texture
             texture() = default;
             texture(const char *file, bool useSRGB);
             texture(const texture &rhs);
-            texture(texture &&rhs);
+            texture(texture &&rhs) noexcept;
             
             void loadFromFile(const char *file, bool useSRGB);
             void loadFromMemory(unsigned char *pixels, int length, bool useSRGB);
@@ -41,5 +41,5 @@ class texture
             void bind(int textureUnit) const;
 
             texture &operator=(const texture &rhs);
-            texture &operator=(texture &&rhs);
+            texture &operator=(texture &&rhs) noexcept;
     };

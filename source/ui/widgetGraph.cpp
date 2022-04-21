@@ -11,10 +11,10 @@ void widgetGraph::removeFromParent(node &parent, node &child)
 			}
 	}
 
-widgetGraph::node &widgetGraph::addWidget(widget* widget)
+widgetGraph::node &widgetGraph::addWidget(widget &widget)
 	{
 		node &n = *m_nodes.emplace();
-		n.widget = widget;
+		n.widget = &widget;
 		m_roots.push_back(&n);
 		m_leafs.push_back(&n);
 		return n;

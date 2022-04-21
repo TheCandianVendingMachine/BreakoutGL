@@ -29,9 +29,11 @@ class vertexArray
             vertexArray();
             vertexArray(unsigned int usage);
             vertexArray(const vertexArray &rhs);
+            vertexArray(vertexArray &&rhs);
             ~vertexArray();
 
             vertexArray &operator=(const vertexArray &rhs);
+            vertexArray &operator=(vertexArray &&rhs);
 
             void bindVertices(const std::vector<vertex> &vertices);
             void bindVertices(unsigned int vbo, unsigned int vertexCount);

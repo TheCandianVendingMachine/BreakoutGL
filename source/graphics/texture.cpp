@@ -51,7 +51,7 @@ texture::texture(const texture &rhs)
         *this = rhs;
     }
 
-texture::texture(texture &&rhs)
+texture::texture(texture &&rhs) noexcept
     {
         *this = std::move(rhs);
     }
@@ -89,7 +89,7 @@ texture &texture::operator=(const texture &rhs)
         return *this;
     }
 
-texture &texture::operator=(texture &&rhs)
+texture &texture::operator=(texture &&rhs) noexcept
     {
         if (&rhs != this)
             {

@@ -7,8 +7,4 @@ enum class widgetTypes
 		NONE,
 		PANEL,
 		BUTTON,
-		CHECK_BOX,
-		RADIO_BUTTON,
-		SLIDER,
-		TEXT
 	};

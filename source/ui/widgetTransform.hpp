@@ -3,6 +3,8 @@
 // Also handles the scale of the widget
 #pragma once
 #include <glm/vec2.hpp>
+#include <glm/mat4x4.hpp>
+#undef ABSOLUTE
 
 class widgetTransform
 	{
@@ -35,9 +37,18 @@ class widgetTransform
 			type m_positionType = type::ABSOLUTE;
 			glm::vec2 m_position = { 0, 0 };
 
+			glm::mat4 m_transformMatrix;
+
+			bool m_needsUpdate = false;
+
 		public:
 			void setPosition(glm::vec2 position, type positionType);
 			void setSize(glm::vec2 size, type sizeType);
 			void setAnchor(anchor anchor);
+
+			glm::vec2 getPosition(glm::vec2 windowSize) const;
+			glm::vec2 getSize(glm::vec2 windowSize) const;
+
+			glm::mat4 getMatrix(glm::vec2 windowSize);
 
 	};

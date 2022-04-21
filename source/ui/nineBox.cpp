@@ -69,7 +69,7 @@ void nineBox::generateVertices()
 		m_regenerateVertices = false;
 	}
 
-nineBox::nineBox(texture texture, unsigned int chunkSize) :
+nineBox::nineBox(::texture texture, unsigned int chunkSize) :
 	m_chunkSize(chunkSize),
 	m_texture(texture)
 	{
@@ -81,8 +81,46 @@ nineBox::nineBox(const char *texturePath, unsigned int chunkSize) :
 	{
 	}
 
+nineBox::nineBox(const nineBox& rhs)
+	{
+		*this = rhs;
+	}
+
+nineBox::nineBox(nineBox &&rhs) noexcept
+	{
+		*this = std::move(rhs);
+	}
+
 nineBox::~nineBox()
 	{
+	}
+
+nineBox &nineBox::operator=(const nineBox& rhs)
+	{
+		if (this != &rhs)
+			{
+				m_texture = rhs.m_texture;
+				m_chunkSize = rhs.m_chunkSize;
+				m_vertexArray = rhs.m_vertexArray;
+				m_size = rhs.m_size;
+				m_colour = rhs.m_colour;
+				m_regenerateVertices = rhs.m_regenerateVertices;
+			}
+		return *this;
+	}
+
+nineBox &nineBox::operator=(nineBox&& rhs) noexcept
+	{
+		if (this != &rhs)
+			{
+				m_texture = std::move(rhs.m_texture);
+				m_chunkSize = std::move(rhs.m_chunkSize);
+				m_vertexArray = std::move(rhs.m_vertexArray);
+				m_size = std::move(rhs.m_size);
+				m_colour = std::move(rhs.m_colour);
+				m_regenerateVertices = std::move(rhs.m_regenerateVertices);
+			}
+		return *this;
 	}
 
 void nineBox::setSize(glm::vec2 size)

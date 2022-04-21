@@ -10,12 +10,9 @@ class widgetGraph
 		public:
 			struct node
 				{
-					private:
-						std::vector<node*> children;
-						node *parent = nullptr;
-						widget *widget = nullptr;
-
-						friend class widgetGraph;
+					std::vector<node*> children;
+					node* parent = nullptr;
+					widget *widget = nullptr;
 				};
 
 		private:
@@ -28,7 +25,7 @@ class widgetGraph
 		public:
 			const std::vector<node*> &roots = m_roots;
 
-			node &addWidget(widget *widget);
+			node &addWidget(widget &widget);
 			void removeWidget(node& widgetNode);
 
 			void addChild(node &parent, node &child);
