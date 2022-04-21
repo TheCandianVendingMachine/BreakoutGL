@@ -58,7 +58,7 @@ void graphicsEngine::draw(const camera &camera, unsigned int texture, drawFlags 
         glBindVertexArray(m_graphicsSystem.m_spriteQuad.vao);
 
         int maxZ = m_graphicsSystem.maxZLayer();
-        std::vector<std::vector<const graphicsComponent*>> zOrderedGraphics(maxZ + 1);
+        std::vector<std::vector<const graphicsComponent*>> zOrderedGraphics(static_cast<std::size_t>(maxZ + 1));
         for (const auto &graphicComponent : m_graphicsSystem.m_graphicComponents) 
             {
                 zOrderedGraphics[maxZ - graphicComponent.zOrder].push_back(&graphicComponent);

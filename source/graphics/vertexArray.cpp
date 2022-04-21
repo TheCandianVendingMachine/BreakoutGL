@@ -12,6 +12,7 @@ vertexArray::vertexArray() :
 vertexArray::vertexArray(unsigned int usage) :
     m_usage(usage)
     {
+        glGenVertexArrays(1, &m_vao);
     }
 
 vertexArray::vertexArray(const vertexArray &rhs)

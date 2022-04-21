@@ -24,13 +24,13 @@ bool particleRenderer::renderParticlesToBuffer(plf::colony<particle>::iterator i
 		for (auto it = itBegin; it < itEnd; ++it)
 			{
 				particleSSBO ssbo;
-				ssbo.runtime = now.thisTime - it->spawnTime.thisTime;
+				ssbo.runtime = static_cast<unsigned int>(now.thisTime - it->spawnTime.thisTime);
 				ssbo.curve = it->accelerationCurve;
 				ssbo.spawn = it->spawnPosition;
 				ssbo.initialVelocity = it->initialVelocity;
 				ssbo.size = it->size;
 				ssbo.rotation = glm::radians(20.f);
-				ssbo.lifeSpan = it->killTime.thisTime - it->spawnTime.thisTime;
+				ssbo.lifeSpan = static_cast<unsigned int>(it->killTime.thisTime - it->spawnTime.thisTime);
 
 				// manually unrolling loop gains us some frametime
 				cBuffer[offset + 0] = reinterpret_cast<char*>(&ssbo)[0];
@@ -154,7 +154,7 @@ void particleRenderer::render(const camera &camera, unsigned int texture)
 				if (m_particles.size() > 1'000'000) 
 					{
 						int i = 0;
-						int particleFraction = m_particles.size() / m_particleRenderThreads.size();
+						int particleFraction = static_cast<int>(m_particles.size() / m_particleRenderThreads.size());
 						for (auto &particleThread : m_particleRenderThreads)
 							{
 								plf::colony<particle>::iterator itBegin = m_particles.begin();
@@ -189,7 +189,7 @@ void particleRenderer::render(const camera &camera, unsigned int texture)
 				m_particleTextureMap.bind(GL_TEXTURE0);
 
 				glBindVertexArray(m_particleVAO.vao);
-				glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_particles.size());
+				glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(m_particles.size()));
 			}
 	}
 
@@ -215,5 +215,5 @@ void particleRenderer::addParticle(glm::vec2 position, glm::vec2 initialVelocity
 
 unsigned int particleRenderer::particleCount() const
 	{
-		return m_particles.size();
+		return static_cast<unsigned int>(m_particles.size());
 	}
