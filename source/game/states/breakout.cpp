@@ -374,7 +374,7 @@ void breakout::init()
                             physics->velocity.y *= -1.f;
                         }
 
-                    globals::g_audioSystem->play("event:/ball_hit_wall");
+                    globals::g_audioSystem->play("event:/brick_hit");
                 }
         });
 
@@ -390,6 +390,7 @@ void breakout::init()
             if (other->entity->hasTag("powerup"))
                 {
                     other->entity->kill();
+                    globals::g_audioSystem->play("event:/powerup_get");
 
                     if (other->entity->hasTag("multiball"))
                         {
