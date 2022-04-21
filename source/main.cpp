@@ -6,6 +6,7 @@
 #include "graphics/graphicsEngine.hpp"
 #include "graphics/particles/particleRenderer.hpp"
 
+#include "fpsLogger.hpp"
 #include "threadPool.hpp"
 #include "random.hpp"
 #include "clock.hpp"
@@ -26,41 +27,14 @@
 
 #include "sound/soundSystem.hpp"
 
-template<unsigned int averageCount>
-struct fpsLogger
-    {
-        fe::clock timer;
-        fe::time fpsCounter[averageCount];
-        unsigned int currentCounterIndex = 0;
-
-        void newFrame()
-            {
-                currentCounterIndex = (currentCounterIndex + 1) % averageCount;
-                fpsCounter[currentCounterIndex] = timer.getTime();
-
-                timer.restart();
-            }
-
-        double getFPS() const
-            {
-                fe::time averageFPS;
-                for (unsigned int i = 0; i < currentCounterIndex; i++)
-                    {
-                        averageFPS += fpsCounter[currentCounterIndex];
-                    }
-                double frameTime = averageFPS.asSeconds();
-                return static_cast<double>(currentCounterIndex) / frameTime;
-            }
-
-    };
-
 int main()
     {
-        fpsLogger<16> fpsCounter;
-
         spdlog::set_level(spdlog::level::debug);
         globals::commonThreadPool threadPool;
         globals::g_threadPool = &threadPool;
+
+        window app(500, 1000, "Breakout");
+        glfwSetInputMode(app.getWindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
         globalEventHandler globalEvents;
         globals::g_globalEventHandler = &globalEvents;
@@ -71,9 +45,6 @@ int main()
         fe::randomImpl c_generator{};
         c_generator.startUp();
         c_generator.seed(1337);
-
-        window app(500, 1000, "Breakout");
-        glfwSetInputMode(app.getWindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
         particleRenderer particles;
         globalEvents.subscribe("spawn particles", [&particles] (message &m, int) {
@@ -129,6 +100,8 @@ int main()
 
         particles.setClock(runClock);
 
+        fpsLogger<16> fpsCounter;
+
         while (app.isOpen())
             {
                 fpsCounter.newFrame();
@@ -164,9 +137,7 @@ int main()
                 game.postUpdate();
 
                 game.preDraw();
-
                 game.draw(graphicsEngine);
-
                 game.postDraw();
 
                 app.pollEvents();
