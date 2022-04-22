@@ -11,7 +11,8 @@ out vec3 VertexColour;
 out vec2 TextureCoord;
 
 void main() {
-    gl_Position = projection * model * vec4(aPosition.xy, 0.0, 1.0);
+    // weird mat4 = view matrix for standard ortho projection
+    gl_Position = projection * mat4(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1) * model * vec4(aPosition.xy, 0.0, 1.0);
 
     VertexColour = aColour;
     TextureCoord = vec2(aTextureCoord.x, aTextureCoord.y);
