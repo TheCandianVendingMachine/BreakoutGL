@@ -8,9 +8,10 @@
 #include "graphics/shader.hpp"
 #include "time.hpp"
 #include "clock.hpp"
+#include "messaging/eventSource.hpp"
 
 class camera;
-class widgetManager
+class widgetManager : public eventSource
 	{
 		private:
 			struct widgetState

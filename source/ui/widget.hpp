@@ -12,10 +12,13 @@ struct widget
 		widgetTransform transform;
 		nineBox texture;
 
-		fe::str onMouseOverEvent = 0;
+		fe::str onMouseEnterEvent = 0;
 		fe::str onMouseLeaveEvent = 0;
 		fe::str onClickEvent = 0;
+		fe::str onClickStartEvent = 0;
+		fe::str onClickEndEvent = 0;
 		fe::str onDoubleClickEvent = 0;
+		fe::str onDrawEvent = 0;
 
 		bool noMouseInteraction = false;
 	};

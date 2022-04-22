@@ -39,7 +39,7 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 				glm::vec2 topLeftPosition = glm::vec2(transform * glm::vec4(0.f, 0.f, 0.f, 1.f));
 				glm::vec2 size = glm::vec2(transform * glm::vec4(1.f, 1.f, 0.f, 1.f)) - topLeftPosition;
 
-				widgetState& state = *static_cast<widgetState*>(top.metaData);
+				widgetState &state = *static_cast<widgetState*>(top.metaData);
 				if (cursorPosition.x >= topLeftPosition.x && cursorPosition.x <= topLeftPosition.x + size.x &&
 					cursorPosition.y >= topLeftPosition.y && cursorPosition.y <= topLeftPosition.y + size.y)
 					{
@@ -47,14 +47,22 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 							{
 								// signal cursor enter
 								state.cursorOn = true;
+								signal(state.widget.onMouseEnterEvent);
 							}
 
 						if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::PRESS && !state.clicked)
 							{
 								// signal click on
+								signal(state.widget.onClickStartEvent);
 								if (m_guiClock.getTime() - state.lastClicked <= m_doubleClickThreshold)
 									{
 										// signal double click
+										signal(state.widget.onDoubleClickEvent);
+									}
+								else
+									{
+										// signal single click
+										signal(state.widget.onClickEvent);
 									}
 
 								state.clicked = true;
@@ -63,6 +71,7 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 						else if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::RELEASE && state.clicked)
 							{
 								// signal click off
+								signal(state.widget.onClickEndEvent);
 								state.clicked = false;
 							}
 					}
@@ -70,6 +79,8 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 					{
 						if (state.cursorOn)
 							{
+								// singlam cursor leave
+								signal(state.widget.onMouseLeaveEvent);
 								state.cursorOn = false;
 							}
 					}
@@ -88,7 +99,8 @@ void widgetManager::drawRoot(widgetGraph::node& root)
 		struct widgetDrawInfo
 			{
 				glm::mat4 transform = glm::mat4(1.f);
-				widget* widget = nullptr;
+				widget *widget = nullptr;
+				widgetState *state = nullptr;
 			};
 		std::stack<widgetDrawInfo> toDraw;
 
@@ -110,13 +122,15 @@ void widgetManager::drawRoot(widgetGraph::node& root)
 						nodesToCheck.push(child);
 					}
 
-				toDraw.emplace(transform, top.widget);
+				toDraw.emplace(transform, top.widget, static_cast<widgetState*>(top.metaData));
 			}
 
 		while (!toDraw.empty())
 			{
 				widgetDrawInfo drawInfo = toDraw.top();
 				toDraw.pop();
+
+				signal(drawInfo.state->widget.onDrawEvent);
 
 				m_widgetShader.setMat4("model", drawInfo.transform);
 
