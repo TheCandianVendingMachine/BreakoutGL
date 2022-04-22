@@ -36,52 +36,55 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 						nodesToCheck.push(child);
 					}
 
-				glm::vec2 topLeftPosition = glm::vec2(transform * glm::vec4(0.f, 0.f, 0.f, 1.f));
-				glm::vec2 size = glm::vec2(transform * glm::vec4(1.f, 1.f, 0.f, 1.f)) - topLeftPosition;
-
-				widgetState &state = *static_cast<widgetState*>(top.metaData);
-				if (cursorPosition.x >= topLeftPosition.x && cursorPosition.x <= topLeftPosition.x + size.x &&
-					cursorPosition.y >= topLeftPosition.y && cursorPosition.y <= topLeftPosition.y + size.y)
+				if (!top.widget->noMouseInteraction)
 					{
-						if (!state.cursorOn)
-							{
-								// signal cursor enter
-								state.cursorOn = true;
-								signal(state.widget.onMouseEnterEvent);
-							}
+						glm::vec2 topLeftPosition = glm::vec2(transform * glm::vec4(0.f, 0.f, 0.f, 1.f));
+						glm::vec2 size = glm::vec2(transform * glm::vec4(1.f, 1.f, 0.f, 1.f)) - topLeftPosition;
 
-						if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::PRESS && !state.clicked)
+						widgetState &state = *static_cast<widgetState*>(top.metaData);
+						if (cursorPosition.x >= topLeftPosition.x && cursorPosition.x <= topLeftPosition.x + size.x &&
+							cursorPosition.y >= topLeftPosition.y && cursorPosition.y <= topLeftPosition.y + size.y)
 							{
-								// signal click on
-								signal(state.widget.onClickStartEvent);
-								if (m_guiClock.getTime() - state.lastClicked <= m_doubleClickThreshold)
+								if (!state.cursorOn)
 									{
-										// signal double click
-										signal(state.widget.onDoubleClickEvent);
-									}
-								else
-									{
-										// signal single click
-										signal(state.widget.onClickEvent);
+										// signal cursor enter
+										state.cursorOn = true;
+										signal(state.widget.onMouseEnterEvent);
 									}
 
-								state.clicked = true;
-								state.lastClicked = m_guiClock.getTime();
+								if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::PRESS && !state.clicked)
+									{
+										// signal click on
+										signal(state.widget.onClickStartEvent);
+										if (m_guiClock.getTime() - state.lastClicked <= m_doubleClickThreshold)
+											{
+												// signal double click
+												signal(state.widget.onDoubleClickEvent);
+											}
+										else
+											{
+												// signal single click
+												signal(state.widget.onClickEvent);
+											}
+
+										state.clicked = true;
+										state.lastClicked = m_guiClock.getTime();
+									}
+								else if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::RELEASE && state.clicked)
+									{
+										// signal click off
+										signal(state.widget.onClickEndEvent);
+										state.clicked = false;
+									}
 							}
-						else if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::RELEASE && state.clicked)
+						else
 							{
-								// signal click off
-								signal(state.widget.onClickEndEvent);
-								state.clicked = false;
-							}
-					}
-				else
-					{
-						if (state.cursorOn)
-							{
-								// singlam cursor leave
-								signal(state.widget.onMouseLeaveEvent);
-								state.cursorOn = false;
+								if (state.cursorOn)
+									{
+										// singlam cursor leave
+										signal(state.widget.onMouseLeaveEvent);
+										state.cursorOn = false;
+									}
 							}
 					}
 			}
