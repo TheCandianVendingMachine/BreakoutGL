@@ -3,8 +3,8 @@
 #pragma once
 
 enum class widgetTypes
-	{
-		NONE,
-		PANEL,
-		BUTTON,
-	};
+    {
+        NONE,
+        PANEL,
+        BUTTON,
+    };

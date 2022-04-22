@@ -4,7 +4,7 @@
 
 class widgetManager;
 namespace widgetSerializer
-	{
-		void saveToFile(widgetManager& widgets, const char *file);
-		void loadFromFile(widgetManager& widgets, const char *file);
-	};
+    {
+        void saveToFile(widgetManager& widgets, const char *file);
+        void loadFromFile(widgetManager& widgets, const char *file);
+    };

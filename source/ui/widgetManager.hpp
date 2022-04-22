@@ -12,46 +12,46 @@
 
 class widgetManager;
 namespace widgetSerializer 
-	{
-		void saveToFile(widgetManager&, const char*);
-		void loadFromFile(widgetManager&, const char*);
-	};
+    {
+        void saveToFile(widgetManager&, const char*);
+        void loadFromFile(widgetManager&, const char*);
+    };
 class camera;
 class widgetManager : public eventSource
-	{
-		private:
-			struct widgetState
-				{
-					widget widget;
-					bool cursorOn = false;
-					bool clicked = false;
-					fe::time lastClicked = fe::seconds(0);
-				};
+    {
+        private:
+            struct widgetState
+                {
+                    widget widget;
+                    bool cursorOn = false;
+                    bool clicked = false;
+                    fe::time lastClicked = fe::seconds(0);
+                };
 
-			fe::clock m_guiClock;
-			fe::time m_doubleClickThreshold = fe::milliseconds(500);
+            fe::clock m_guiClock;
+            fe::time m_doubleClickThreshold = fe::milliseconds(500);
 
-			inputHandler::input m_guiClick;
+            inputHandler::input m_guiClick;
 
-			plf::colony<widgetState> m_widgets;
-			widgetGraph m_widgetGraph;
+            plf::colony<widgetState> m_widgets;
+            widgetGraph m_widgetGraph;
 
-			glm::vec2 m_windowSize = { 0.f, 0.f };
+            glm::vec2 m_windowSize = { 0.f, 0.f };
 
-			shader m_widgetShader;
+            shader m_widgetShader;
 
-			void traverseRoot(widgetGraph::node &root);
-			void drawRoot(widgetGraph::node &root);
+            void traverseRoot(widgetGraph::node &root);
+            void drawRoot(widgetGraph::node &root);
 
-			friend void widgetSerializer::saveToFile(widgetManager&, const char*);
-			friend void widgetSerializer::loadFromFile(widgetManager&, const char*);
+            friend void widgetSerializer::saveToFile(widgetManager&, const char*);
+            friend void widgetSerializer::loadFromFile(widgetManager&, const char*);
 
-		public:
-			widgetManager(glm::vec2 windowSize);
-			~widgetManager();
+        public:
+            widgetManager(glm::vec2 windowSize);
+            ~widgetManager();
 
-			void setWindowSize(glm::vec2 size);
+            void setWindowSize(glm::vec2 size);
 
-			void update();
-			void draw(const camera &camera, unsigned int texture);
-	};
+            void update();
+            void draw(const camera &camera, unsigned int texture);
+    };

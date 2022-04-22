@@ -6,29 +6,29 @@
 
 struct widget;
 class widgetGraph
-	{
-		public:
-			struct node
-				{
-					std::vector<node*> children;
-					node* parent = nullptr;
-					widget *widget = nullptr;
-					void *metaData = nullptr;
-				};
+    {
+        public:
+            struct node
+                {
+                    std::vector<node*> children;
+                    node* parent = nullptr;
+                    widget *widget = nullptr;
+                    void *metaData = nullptr;
+                };
 
-		private:
-			plf::colony<node> m_nodes;
-			std::vector<node*> m_leafs;
-			std::vector<node*> m_roots;
+        private:
+            plf::colony<node> m_nodes;
+            std::vector<node*> m_leafs;
+            std::vector<node*> m_roots;
 
-			void removeFromParent(node &parent, node &child);
+            void removeFromParent(node &parent, node &child);
 
-		public:
-			const std::vector<node*> &roots = m_roots;
+        public:
+            const std::vector<node*> &roots = m_roots;
 
-			node &addWidget(widget &widget, void *metaData = nullptr);
-			void removeWidget(node& widgetNode);
+            node &addWidget(widget &widget, void *metaData = nullptr);
+            void removeWidget(node& widgetNode);
 
-			void addChild(node &parent, node &child);
+            void addChild(node &parent, node &child);
 
-	};
+    };

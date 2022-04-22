@@ -40,14 +40,14 @@ struct message
                     } variableType = type::NONE;
 
                 argument()                          { variable.INT = 0; };
-                argument(int arg)					{ variable.INT = arg;		variableType = type::INT; }
-                argument(float arg)					{ variable.FLOAT = arg;		variableType = type::FLOAT; }
-                argument(double arg)				{ variable.DOUBLE = arg;	variableType = type::DOUBLE; }
-                argument(bool arg)					{ variable.BOOL = arg;		variableType = type::BOOL; }
-                argument(glm::vec2 arg)				{ variable.VEC2 = arg;		variableType = type::VEC2; }
-                argument(glm::vec3 arg)				{ variable.VEC3 = arg;		variableType = type::VEC3; }
-                argument(void *arg)					{ variable.USER_DATA = arg;	variableType = type::USER_DATA; }
-                argument(void *arg, void *metaData) { variable.USER_DATA = arg;	variableType = type::USER_DATA; this->metaData = metaData; }
+                argument(int arg)                    { variable.INT = arg;        variableType = type::INT; }
+                argument(float arg)                    { variable.FLOAT = arg;        variableType = type::FLOAT; }
+                argument(double arg)                { variable.DOUBLE = arg;    variableType = type::DOUBLE; }
+                argument(bool arg)                    { variable.BOOL = arg;        variableType = type::BOOL; }
+                argument(glm::vec2 arg)                { variable.VEC2 = arg;        variableType = type::VEC2; }
+                argument(glm::vec3 arg)                { variable.VEC3 = arg;        variableType = type::VEC3; }
+                argument(void *arg)                    { variable.USER_DATA = arg;    variableType = type::USER_DATA; }
+                argument(void *arg, void *metaData) { variable.USER_DATA = arg;    variableType = type::USER_DATA; this->metaData = metaData; }
                 argument(std::int64_t arg)          { variable.INT64 = arg;      variableType = type::INT64; }
 
                 bool cast(int &in)

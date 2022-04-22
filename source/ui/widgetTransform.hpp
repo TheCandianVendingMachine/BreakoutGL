@@ -8,28 +8,28 @@
 #undef ABSOLUTE
 
 class widgetTransform
-	{
-		private:
-			widgetTransformEnums::anchor m_anchor = widgetTransformEnums::anchor::MIDDLE;
+    {
+        private:
+            widgetTransformEnums::anchor m_anchor = widgetTransformEnums::anchor::MIDDLE;
 
-			widgetTransformEnums::type m_sizeType = widgetTransformEnums::type::ABSOLUTE;
-			glm::vec2 m_size = { 0, 0 };
+            widgetTransformEnums::type m_sizeType = widgetTransformEnums::type::ABSOLUTE;
+            glm::vec2 m_size = { 0, 0 };
 
-			widgetTransformEnums::type m_positionType = widgetTransformEnums::type::ABSOLUTE;
-			glm::vec2 m_position = { 0, 0 };
+            widgetTransformEnums::type m_positionType = widgetTransformEnums::type::ABSOLUTE;
+            glm::vec2 m_position = { 0, 0 };
 
-			glm::mat4 m_transformMatrix;
+            glm::mat4 m_transformMatrix;
 
-			bool m_needsUpdate = false;
+            bool m_needsUpdate = false;
 
-		public:
-			void setPosition(glm::vec2 position, widgetTransformEnums::type positionType);
-			void setSize(glm::vec2 size, widgetTransformEnums::type sizeType);
-			void setAnchor(widgetTransformEnums::anchor anchor);
+        public:
+            void setPosition(glm::vec2 position, widgetTransformEnums::type positionType);
+            void setSize(glm::vec2 size, widgetTransformEnums::type sizeType);
+            void setAnchor(widgetTransformEnums::anchor anchor);
 
-			glm::vec2 getPosition(glm::vec2 windowSize) const;
-			glm::vec2 getSize(glm::vec2 windowSize) const;
+            glm::vec2 getPosition(glm::vec2 windowSize) const;
+            glm::vec2 getSize(glm::vec2 windowSize) const;
 
-			glm::mat4 getMatrix(glm::vec2 windowSize);
+            glm::mat4 getMatrix(glm::vec2 windowSize);
 
-	};
+    };

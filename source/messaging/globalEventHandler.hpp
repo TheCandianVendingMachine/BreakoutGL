@@ -4,12 +4,12 @@
 #include "eventSource.hpp"
 
 class globalEventHandler : public eventSource
-	{
-		public:
-			void signal(message m);
-	};
+    {
+        public:
+            void signal(message m);
+    };
 
 namespace globals
-	{
-		extern globalEventHandler *g_globalEventHandler;
-	}
+    {
+        extern globalEventHandler *g_globalEventHandler;
+    }

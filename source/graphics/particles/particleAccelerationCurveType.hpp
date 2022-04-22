@@ -3,7 +3,7 @@
 #pragma once
 
 enum class particleAccelerationCurveType : int 
-	{
-		NONE = 0,
-		GRAVITY,
-	};
+    {
+        NONE = 0,
+        GRAVITY,
+    };

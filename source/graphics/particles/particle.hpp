@@ -7,11 +7,11 @@
 #include "particleAccelerationCurveType.hpp"
 
 struct particle
-	{
-		glm::vec2 spawnPosition = { 0, 0 };
-		glm::vec2 initialVelocity = { 0, 0 };
-		fe::time spawnTime = fe::seconds(0);
-		fe::time killTime = fe::seconds(0);
-		particleAccelerationCurveType accelerationCurve = particleAccelerationCurveType::NONE;
-		float size = 1.f;
-	};
+    {
+        glm::vec2 spawnPosition = { 0, 0 };
+        glm::vec2 initialVelocity = { 0, 0 };
+        fe::time spawnTime = fe::seconds(0);
+        fe::time killTime = fe::seconds(0);
+        particleAccelerationCurveType accelerationCurve = particleAccelerationCurveType::NONE;
+        float size = 1.f;
+    };

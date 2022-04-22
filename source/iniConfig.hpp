@@ -28,17 +28,17 @@ class iniConfig
 
                         enum class valueType
                             {
-                                UNKNOWN				= 0,
-                                STRING				= 1 << 0,
-                                BOOL				= 1 << 1,
-                                CHAR				= 1 << 2,
-                                SHORT				= 1 << 3,
-                                INT					= 1 << 4,
-                                UNSIGNED_INT		= 1 << 5,
-                                LONG_LONG			= 1 << 6,
-                                UNSIGNED_LONG_LONG	= 1 << 7,
-                                FLOAT				= 1 << 8,
-                                DOUBLE				= 1 << 9
+                                UNKNOWN                = 0,
+                                STRING                = 1 << 0,
+                                BOOL                = 1 << 1,
+                                CHAR                = 1 << 2,
+                                SHORT                = 1 << 3,
+                                INT                    = 1 << 4,
+                                UNSIGNED_INT        = 1 << 5,
+                                LONG_LONG            = 1 << 6,
+                                UNSIGNED_LONG_LONG    = 1 << 7,
+                                FLOAT                = 1 << 8,
+                                DOUBLE                = 1 << 9
                             } m_storedValue = valueType::UNKNOWN;
 
                         template<typename T>

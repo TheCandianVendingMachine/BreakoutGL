@@ -14,12 +14,12 @@ struct vertex
 
         enum class attributes
             {
-                NONE		= 0,
-                POSITION	= 1 << 0,
-                NORMAL		= 1 << 1,
-                TANGENT		= 1 << 2,
-                COLOUR		= 1 << 3,
-                TEXTURE		= 1 << 4
+                NONE        = 0,
+                POSITION    = 1 << 0,
+                NORMAL        = 1 << 1,
+                TANGENT        = 1 << 2,
+                COLOUR        = 1 << 3,
+                TEXTURE        = 1 << 4
             };
 
         friend vertex::attributes operator|(const vertex::attributes &lhs, const vertex::attributes &rhs);

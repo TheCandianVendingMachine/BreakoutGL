@@ -9,24 +9,24 @@
 #include "str.hpp"
 
 class soundSystem
-	{
-		private:
-			FMOD::Studio::System* m_system = nullptr;
+    {
+        private:
+            FMOD::Studio::System* m_system = nullptr;
 
-			unsigned int m_bankID = 0;
-			robin_hood::unordered_map<unsigned int, FMOD::Studio::Bank*> m_loadedBanks;
+            unsigned int m_bankID = 0;
+            robin_hood::unordered_map<unsigned int, FMOD::Studio::Bank*> m_loadedBanks;
 
             robin_hood::unordered_map<fe::str, FMOD::Studio::EventDescription*> m_descriptions;
 
             plf::colony<FMOD::Studio::EventInstance*> m_playingInstances;
 
-			__forceinline void verifyImportant(FMOD_RESULT result) const; // crashes on bad result
+            __forceinline void verifyImportant(FMOD_RESULT result) const; // crashes on bad result
             __forceinline bool verifyCasual(FMOD_RESULT result) const; // returns false on bad result
 
-			void loadBank(const char *bank);
-			FMOD::Studio::EventInstance* createInstance(const char* event);
+            void loadBank(const char *bank);
+            FMOD::Studio::EventInstance* createInstance(const char* event);
 
-			template<typename T>
+            template<typename T>
             constexpr void getHexFromData(T data, char *out, int *index) const
                 {
                     constexpr char hexLookupTable[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
@@ -78,14 +78,14 @@ class soundSystem
                     return fe::hash(out, 5381); // constexpr version
                 }
 
-		public:
-			soundSystem();
-			~soundSystem();
+        public:
+            soundSystem();
+            ~soundSystem();
 
-			void update();
+            void update();
 
             void play(const char *event);
-	};
+    };
 
 namespace globals
     {
