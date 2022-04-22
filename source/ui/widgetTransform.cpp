@@ -68,28 +68,28 @@ glm::mat4 widgetTransform::getMatrix(glm::vec2 windowSize)
 							position = truePosition;
 							break;
 						case widgetTransform::anchor::TOP_MIDDLE:
-							position = truePosition + glm::vec2(trueSize.x * 0.5f, 0.f);
+							position = truePosition - glm::vec2(trueSize.x * 0.5f, 0.f);
 							break;
 						case widgetTransform::anchor::TOP_RIGHT:
-							position = truePosition + glm::vec2(trueSize.x, 0.f);
+							position = truePosition - glm::vec2(trueSize.x, 0.f);
 							break;
 						case widgetTransform::anchor::MIDDLE_LEFT:
-							position = truePosition + glm::vec2(0.f, trueSize.y * 0.5f);
+							position = truePosition - glm::vec2(0.f, trueSize.y * 0.5f);
 							break;
 						case widgetTransform::anchor::MIDDLE:
-							position = truePosition + trueSize * 0.5f;
+							position = truePosition - trueSize * 0.5f;
 							break;
 						case widgetTransform::anchor::MIDDLE_RIGHT:
-							position = truePosition + glm::vec2(trueSize.x, trueSize.y * 0.5f);
+							position = truePosition - glm::vec2(trueSize.x, trueSize.y * 0.5f);
 							break;
 						case widgetTransform::anchor::BOTTOM_LEFT:
-							position = truePosition + glm::vec2(0.f, trueSize.y);
+							position = truePosition - glm::vec2(0.f, trueSize.y);
 							break;
 						case widgetTransform::anchor::BOTTOM_MIDDLE:
-							position = truePosition + glm::vec2(trueSize.x * 0.5f, trueSize.y);
+							position = truePosition - glm::vec2(trueSize.x * 0.5f, trueSize.y);
 							break;
 						case widgetTransform::anchor::BOTTOM_RIGHT:
-							position = truePosition + trueSize;
+							position = truePosition - trueSize;
 							break;
 						default:
 							break;
