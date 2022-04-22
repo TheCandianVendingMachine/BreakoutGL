@@ -28,6 +28,7 @@
 #include "sound/soundSystem.hpp"
 
 #include "ui/widgetManager.hpp"
+#include "ui/widgetSerializer.hpp"
 
 int main()
     {
@@ -84,6 +85,11 @@ int main()
 
         graphicsSystem graphicsSystem;
         graphicsEngine graphicsEngine(app, graphicsSystem, particles, widgets);
+
+        widgetSerializer::loadFromFile(widgets, "guiTest.csv");
+        widgets.subscribe("continue game", [](message& m, int) { spdlog::info("continue"); });
+        widgets.subscribe("goto settings", [](message& m, int) { spdlog::info("settings"); });
+        widgets.subscribe("quit game", [](message& m, int) { spdlog::info("quit"); });
 
         globals::g_graphicsSystem = &graphicsSystem;
         globals::g_graphicsEngine = &graphicsEngine;

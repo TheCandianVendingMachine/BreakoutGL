@@ -26,19 +26,18 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 				nodesToCheck.pop();
 
 				glm::mat4 transform = glm::translate(glm::mat4(1.f), glm::vec3(currentPosition.top(), 0.f)) * top.widget->transform.getMatrix(m_windowSize);
-				
-				glm::vec2 position = currentPosition.top() + top.widget->transform.getPosition(m_windowSize);
+				glm::vec2 topLeftPosition = glm::vec2(transform * glm::vec4(0.f, 0.f, 0.f, 1.f));
+
 				currentPosition.pop();
 
 				for (auto &child : top.children)
 					{
-						currentPosition.push(position);
+						currentPosition.push(topLeftPosition);
 						nodesToCheck.push(child);
 					}
 
 				if (!top.widget->noMouseInteraction)
 					{
-						glm::vec2 topLeftPosition = glm::vec2(transform * glm::vec4(0.f, 0.f, 0.f, 1.f));
 						glm::vec2 size = glm::vec2(transform * glm::vec4(1.f, 1.f, 0.f, 1.f)) - topLeftPosition;
 
 						widgetState &state = *static_cast<widgetState*>(top.metaData);
@@ -61,11 +60,8 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 												// signal double click
 												signal(state.widget.onDoubleClickEvent);
 											}
-										else
-											{
-												// signal single click
-												signal(state.widget.onClickEvent);
-											}
+										// signal single click
+										signal(state.widget.onClickEvent);
 
 										state.clicked = true;
 										state.lastClicked = m_guiClock.getTime();
@@ -114,14 +110,13 @@ void widgetManager::drawRoot(widgetGraph::node& root)
 				nodesToCheck.pop();
 
 				glm::mat4 transform = glm::translate(glm::mat4(1.f), glm::vec3(currentPosition.top(), 0.f)) * top.widget->transform.getMatrix(m_windowSize);
-
-				glm::vec2 position = currentPosition.top() + top.widget->transform.getPosition(m_windowSize);
+				glm::vec2 topLeftPosition = glm::vec2(transform * glm::vec4(0.f, 0.f, 0.f, 1.f));
 
 				currentPosition.pop();
 
 				for (auto &child : top.children)
 					{
-						currentPosition.push(position);
+						currentPosition.push(topLeftPosition);
 						nodesToCheck.push(child);
 					}
 
@@ -160,40 +155,6 @@ widgetManager::widgetManager(glm::vec2 windowSize) :
 				globalUISettings["gui"]["double click time"] = m_doubleClickThreshold.asSeconds();
 			}
 		globalUISettings.save("gui_settings.ini");
-
-		widgetState& a = *m_widgets.emplace();
-		
-		widgetState &b0 = *m_widgets.emplace();
-		widgetState &b1 = *m_widgets.emplace();
-		widgetState &b2 = *m_widgets.emplace();
-		widgetState &b3 = *m_widgets.emplace();
-
-		a.widget.texture = nineBox("9box.png", 8);
-		b0.widget.texture = nineBox("9box.png", 8);
-		b1.widget.texture = nineBox("9box.png", 8);
-		b2.widget.texture = nineBox("9box.png", 8);
-		b3.widget.texture = nineBox("9box.png", 8);
-
-		auto &an = m_widgetGraph.addWidget(a.widget, &a);
-		auto &bn0 = m_widgetGraph.addWidget(b0.widget, &b0);
-		auto &bn1 = m_widgetGraph.addWidget(b1.widget, &b1);
-		auto &bn2 = m_widgetGraph.addWidget(b2.widget, &b2);
-		auto &bn3 = m_widgetGraph.addWidget(b3.widget, &b3);
-
-		m_widgetGraph.addChild(bn0, bn1);
-		m_widgetGraph.addChild(bn0, bn2);
-		m_widgetGraph.addChild(bn1, bn3);
-
-		a.widget.transform.setPosition({ 150.f, 150.f }, widgetTransform::type::ABSOLUTE);
-		a.widget.transform.setSize({ 300.f, 200.f }, widgetTransform::type::ABSOLUTE);
-
-		b0.widget.transform.setAnchor(widgetTransform::anchor::MIDDLE_RIGHT);
-		b0.widget.transform.setPosition({ 1.f, 0.5f }, widgetTransform::type::PERCENT); b0.widget.transform.setSize({100.f, 100.f}, widgetTransform::type::ABSOLUTE);
-		b1.widget.transform.setPosition({ -50.f, 100.f }, widgetTransform::type::ABSOLUTE); b1.widget.transform.setSize({ 50.f, 100.f }, widgetTransform::type::ABSOLUTE);
-		b2.widget.transform.setPosition({ 0.f, 100.f }, widgetTransform::type::ABSOLUTE); b2.widget.transform.setSize({ 100.f, 50.f }, widgetTransform::type::ABSOLUTE);
-
-		b3.widget.transform.setAnchor(widgetTransform::anchor::TOP_LEFT);
-		b3.widget.transform.setPosition({ 0.f, 150.f }, widgetTransform::type::ABSOLUTE); b3.widget.transform.setSize({ 0.1f, 0.05f }, widgetTransform::type::PERCENT);
 	}
 
 widgetManager::~widgetManager()

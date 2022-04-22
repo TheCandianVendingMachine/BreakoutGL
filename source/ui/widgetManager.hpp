@@ -10,6 +10,12 @@
 #include "clock.hpp"
 #include "messaging/eventSource.hpp"
 
+class widgetManager;
+namespace widgetSerializer 
+	{
+		void saveToFile(widgetManager&, const char*);
+		void loadFromFile(widgetManager&, const char*);
+	};
 class camera;
 class widgetManager : public eventSource
 	{
@@ -36,6 +42,9 @@ class widgetManager : public eventSource
 
 			void traverseRoot(widgetGraph::node &root);
 			void drawRoot(widgetGraph::node &root);
+
+			friend void widgetSerializer::saveToFile(widgetManager&, const char*);
+			friend void widgetSerializer::loadFromFile(widgetManager&, const char*);
 
 		public:
 			widgetManager(glm::vec2 windowSize);
