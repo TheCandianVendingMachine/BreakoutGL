@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
 #include "graphics/camera.hpp"
+#include "iniConfig.hpp"
 
 #undef ABSOLUTE
 
@@ -25,22 +26,52 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 				nodesToCheck.pop();
 
 				glm::mat4 transform = glm::translate(glm::mat4(1.f), glm::vec3(currentPosition.top(), 0.f)) * top.widget->transform.getMatrix(m_windowSize);
+				
+				glm::vec2 position = currentPosition.top() + top.widget->transform.getPosition(m_windowSize);
 				currentPosition.pop();
 
 				for (auto &child : top.children)
 					{
-						currentPosition.push(top.widget->transform.getPosition(m_windowSize));
+						currentPosition.push(position);
 						nodesToCheck.push(child);
 					}
 
-				glm::vec2 position = transform * glm::vec4(0.f, 0.f, 0.f, 1.f);
-				glm::vec2 size = glm::vec2(transform * glm::vec4(1.f, 1.f, 0.f, 1.f)) - position;
+				glm::vec2 topLeftPosition = glm::vec2(transform * glm::vec4(0.f, 0.f, 0.f, 1.f));
+				glm::vec2 size = glm::vec2(transform * glm::vec4(1.f, 1.f, 0.f, 1.f)) - topLeftPosition;
 
-				if (cursorPosition.x >= position.x && cursorPosition.x <= position.x + size.x &&
-					cursorPosition.y >= position.y && cursorPosition.y <= position.y + size.y)
+				widgetState& state = *static_cast<widgetState*>(top.metaData);
+				if (cursorPosition.x >= topLeftPosition.x && cursorPosition.x <= topLeftPosition.x + size.x &&
+					cursorPosition.y >= topLeftPosition.y && cursorPosition.y <= topLeftPosition.y + size.y)
 					{
-						// intersects
-						spdlog::info("Intersects");
+						if (!state.cursorOn)
+							{
+								// signal cursor enter
+								state.cursorOn = true;
+							}
+
+						if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::PRESS && !state.clicked)
+							{
+								// signal click on
+								if (m_guiClock.getTime() - state.lastClicked <= m_doubleClickThreshold)
+									{
+										// signal double click
+									}
+
+								state.clicked = true;
+								state.lastClicked = m_guiClock.getTime();
+							}
+						else if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::RELEASE && state.clicked)
+							{
+								// signal click off
+								state.clicked = false;
+							}
+					}
+				else
+					{
+						if (state.cursorOn)
+							{
+								state.cursorOn = false;
+							}
 					}
 			}
 	}
@@ -102,6 +133,17 @@ widgetManager::widgetManager(glm::vec2 windowSize) :
 	m_windowSize(windowSize),
 	m_widgetShader("shaders/widgets.vs", "shaders/widgets.fs")
 	{
+		iniConfig globalUISettings("gui_settings.ini");
+		if (globalUISettings["gui"].has("double click time"))
+			{
+				m_doubleClickThreshold = fe::seconds(globalUISettings["gui"]["double click time"].asDouble());
+			}
+		else
+			{
+				globalUISettings["gui"]["double click time"] = m_doubleClickThreshold.asSeconds();
+			}
+		globalUISettings.save("gui_settings.ini");
+
 		widgetState& a = *m_widgets.emplace();
 		
 		widgetState &b0 = *m_widgets.emplace();
@@ -115,14 +157,14 @@ widgetManager::widgetManager(glm::vec2 windowSize) :
 		b2.widget.texture = nineBox("9box.png", 8);
 		b3.widget.texture = nineBox("9box.png", 8);
 
-		//auto &an = m_widgetGraph.addWidget(a.widget);
-		auto &bn0 = m_widgetGraph.addWidget(b0.widget);
-		auto &bn1 = m_widgetGraph.addWidget(b1.widget);
-		//auto &bn2 = m_widgetGraph.addWidget(b2.widget);
-		auto &bn3 = m_widgetGraph.addWidget(b3.widget);
+		auto &an = m_widgetGraph.addWidget(a.widget, &a);
+		auto &bn0 = m_widgetGraph.addWidget(b0.widget, &b0);
+		auto &bn1 = m_widgetGraph.addWidget(b1.widget, &b1);
+		auto &bn2 = m_widgetGraph.addWidget(b2.widget, &b2);
+		auto &bn3 = m_widgetGraph.addWidget(b3.widget, &b3);
 
 		m_widgetGraph.addChild(bn0, bn1);
-		//m_widgetGraph.addChild(bn0, bn2);
+		m_widgetGraph.addChild(bn0, bn2);
 		m_widgetGraph.addChild(bn1, bn3);
 
 		a.widget.transform.setPosition({ 150.f, 150.f }, widgetTransform::type::ABSOLUTE);

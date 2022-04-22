@@ -6,6 +6,8 @@
 #include "widgetGraph.hpp"
 #include "inputHandler.hpp"
 #include "graphics/shader.hpp"
+#include "time.hpp"
+#include "clock.hpp"
 
 class camera;
 class widgetManager
@@ -14,7 +16,13 @@ class widgetManager
 			struct widgetState
 				{
 					widget widget;
+					bool cursorOn = false;
+					bool clicked = false;
+					fe::time lastClicked = fe::seconds(0);
 				};
+
+			fe::clock m_guiClock;
+			fe::time m_doubleClickThreshold = fe::milliseconds(500);
 
 			inputHandler::input m_guiClick;
 

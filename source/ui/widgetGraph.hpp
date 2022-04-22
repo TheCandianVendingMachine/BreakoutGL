@@ -13,6 +13,7 @@ class widgetGraph
 					std::vector<node*> children;
 					node* parent = nullptr;
 					widget *widget = nullptr;
+					void *metaData = nullptr;
 				};
 
 		private:
@@ -25,7 +26,7 @@ class widgetGraph
 		public:
 			const std::vector<node*> &roots = m_roots;
 
-			node &addWidget(widget &widget);
+			node &addWidget(widget &widget, void *metaData = nullptr);
 			void removeWidget(node& widgetNode);
 
 			void addChild(node &parent, node &child);

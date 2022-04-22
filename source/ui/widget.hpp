@@ -16,8 +16,6 @@ struct widget
 		fe::str onMouseLeaveEvent = 0;
 		fe::str onClickEvent = 0;
 		fe::str onDoubleClickEvent = 0;
-		fe::str onMouseWheelUpEvent = 0;
-		fe::str onMouseWheelDownEvent = 0;
 
 		bool noMouseInteraction = false;
 	};
