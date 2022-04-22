@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <stack>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
 #include "graphics/camera.hpp"
 
@@ -12,10 +13,10 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 	{
 		// DFS on the widget graph. Checks all widgets for mouse collision, and processes on that
 		std::stack<widgetGraph::node*> nodesToCheck;
-		std::stack<glm::mat4> currentTransform;
+		std::stack<glm::vec2> currentPosition;
 
 		nodesToCheck.push(&root);
-		currentTransform.push(glm::mat4(1.f));
+		currentPosition.push(glm::vec2(0.f));
 
 		glm::vec2 cursorPosition = globals::g_inputs->getCursorPosition();
 		while (!nodesToCheck.empty())
@@ -23,12 +24,12 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
 				widgetGraph::node &top = *nodesToCheck.top();
 				nodesToCheck.pop();
 
-				glm::mat4 transform = root.widget->transform.getMatrix(m_windowSize) * currentTransform.top();
-				currentTransform.pop();
+				glm::mat4 transform = glm::translate(glm::mat4(1.f), glm::vec3(currentPosition.top(), 0.f)) * top.widget->transform.getMatrix(m_windowSize);
+				currentPosition.pop();
 
 				for (auto &child : top.children)
 					{
-						currentTransform.push(transform);
+						currentPosition.push(top.widget->transform.getPosition(m_windowSize));
 						nodesToCheck.push(child);
 					}
 
@@ -48,10 +49,17 @@ void widgetManager::drawRoot(widgetGraph::node& root)
 	{
 		// DFS on the widget graph. Render all widgets as we pass them
 		std::stack<widgetGraph::node*> nodesToCheck;
-		std::stack<glm::mat4> currentTransform;
+		std::stack<glm::vec2> currentPosition;
 
 		nodesToCheck.push(&root);
-		currentTransform.push(glm::mat4(1.f));
+		currentPosition.push(glm::vec2(0.f));
+
+		struct widgetDrawInfo
+			{
+				glm::mat4 transform = glm::mat4(1.f);
+				widget* widget = nullptr;
+			};
+		std::stack<widgetDrawInfo> toDraw;
 
 		glm::vec2 cursorPosition = globals::g_inputs->getCursorPosition();
 		while (!nodesToCheck.empty())
@@ -59,21 +67,32 @@ void widgetManager::drawRoot(widgetGraph::node& root)
 				widgetGraph::node &top = *nodesToCheck.top();
 				nodesToCheck.pop();
 
-				glm::mat4 transform = root.widget->transform.getMatrix(m_windowSize) * currentTransform.top();
-				currentTransform.pop();
+				glm::mat4 transform = glm::translate(glm::mat4(1.f), glm::vec3(currentPosition.top(), 0.f)) * top.widget->transform.getMatrix(m_windowSize);
+
+				glm::vec2 position = currentPosition.top() + top.widget->transform.getPosition(m_windowSize);
+
+				currentPosition.pop();
 
 				for (auto &child : top.children)
 					{
-						currentTransform.push(transform);
+						currentPosition.push(position);
 						nodesToCheck.push(child);
 					}
 
-				m_widgetShader.setMat4("model", transform);
+				toDraw.emplace(transform, top.widget);
+			}
 
-				const vertexArray &vertexArray = top.widget->texture.getVertexArray(top.widget->transform.getSize(m_windowSize));
+		while (!toDraw.empty())
+			{
+				widgetDrawInfo drawInfo = toDraw.top();
+				toDraw.pop();
+
+				m_widgetShader.setMat4("model", drawInfo.transform);
+
+				const vertexArray &vertexArray = drawInfo.widget->texture.getVertexArray(drawInfo.widget->transform.getSize(m_windowSize));
 				glBindVertexArray(vertexArray.vao);
 
-				top.widget->texture.texture.bind(GL_TEXTURE0);
+				drawInfo.widget->texture.texture.bind(GL_TEXTURE0);
 				glDrawElements(GL_TRIANGLES, vertexArray.indexCount, GL_UNSIGNED_INT, 0);
 			}
 	}
@@ -100,19 +119,22 @@ widgetManager::widgetManager(glm::vec2 windowSize) :
 		auto &bn0 = m_widgetGraph.addWidget(b0.widget);
 		auto &bn1 = m_widgetGraph.addWidget(b1.widget);
 		//auto &bn2 = m_widgetGraph.addWidget(b2.widget);
-		//auto &bn3 = m_widgetGraph.addWidget(b3.widget);
+		auto &bn3 = m_widgetGraph.addWidget(b3.widget);
 
 		m_widgetGraph.addChild(bn0, bn1);
 		//m_widgetGraph.addChild(bn0, bn2);
-		//m_widgetGraph.addChild(bn1, bn3);
+		m_widgetGraph.addChild(bn1, bn3);
 
 		a.widget.transform.setPosition({ 150.f, 150.f }, widgetTransform::type::ABSOLUTE);
 		a.widget.transform.setSize({ 300.f, 200.f }, widgetTransform::type::ABSOLUTE);
 
-		b0.widget.transform.setPosition({ 0.5f, 0.5f }, widgetTransform::type::PERCENT); b0.widget.transform.setSize({100.f, 100.f}, widgetTransform::type::ABSOLUTE);
-		b1.widget.transform.setPosition({ 50.f, 0.f }, widgetTransform::type::ABSOLUTE); b1.widget.transform.setSize({ 50.f, 100.f }, widgetTransform::type::ABSOLUTE);
+		b0.widget.transform.setAnchor(widgetTransform::anchor::MIDDLE_RIGHT);
+		b0.widget.transform.setPosition({ 1.f, 0.5f }, widgetTransform::type::PERCENT); b0.widget.transform.setSize({100.f, 100.f}, widgetTransform::type::ABSOLUTE);
+		b1.widget.transform.setPosition({ -50.f, 100.f }, widgetTransform::type::ABSOLUTE); b1.widget.transform.setSize({ 50.f, 100.f }, widgetTransform::type::ABSOLUTE);
 		b2.widget.transform.setPosition({ 0.f, 100.f }, widgetTransform::type::ABSOLUTE); b2.widget.transform.setSize({ 100.f, 50.f }, widgetTransform::type::ABSOLUTE);
-		b3.widget.transform.setPosition({ 0.f, 5.f }, widgetTransform::type::ABSOLUTE); b3.widget.transform.setSize({ 0.1f, 0.05f }, widgetTransform::type::PERCENT);
+
+		b3.widget.transform.setAnchor(widgetTransform::anchor::TOP_LEFT);
+		b3.widget.transform.setPosition({ 0.f, 150.f }, widgetTransform::type::ABSOLUTE); b3.widget.transform.setSize({ 0.1f, 0.05f }, widgetTransform::type::PERCENT);
 	}
 
 widgetManager::~widgetManager()
