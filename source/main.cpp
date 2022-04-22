@@ -27,6 +27,8 @@
 
 #include "sound/soundSystem.hpp"
 
+#include "ui/widgetManager.hpp"
+
 int main()
     {
         spdlog::set_level(spdlog::level::debug);
@@ -35,6 +37,9 @@ int main()
 
         window app(500, 1000, "Breakout");
         glfwSetInputMode(app.getWindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
+        inputHandler c_inputHandler(app.getWindow(), "inputs.ini");
+        globals::g_inputs = &c_inputHandler;
 
         globalEventHandler globalEvents;
         globals::g_globalEventHandler = &globalEvents;
@@ -75,14 +80,13 @@ int main()
                 }
         });
 
+        widgetManager widgets({ 500.f, 1000.f });
+
         graphicsSystem graphicsSystem;
-        graphicsEngine graphicsEngine(app, graphicsSystem, particles);
+        graphicsEngine graphicsEngine(app, graphicsSystem, particles, widgets);
 
         globals::g_graphicsSystem = &graphicsSystem;
         globals::g_graphicsEngine = &graphicsEngine;
-
-        inputHandler c_inputHandler(app.getWindow(), "inputs.ini");
-        globals::g_inputs = &c_inputHandler;
 
         c_inputHandler.addDefaultInput("debug", "close", GLFW_KEY_ESCAPE);
         c_inputHandler.addDefaultInput("debug", "left", GLFW_MOUSE_BUTTON_LEFT);
@@ -119,6 +123,8 @@ int main()
                     {
                         app.close();
                     }
+
+                widgets.update();
 
                 audioEngine.update();
 
