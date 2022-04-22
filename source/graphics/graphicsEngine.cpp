@@ -10,6 +10,7 @@
 #include <spdlog/spdlog.h>
 
 #include "ecs/graphicsSystem.hpp"
+#include "ui/widgetManager.hpp"
 
 graphicsEngine *globals::g_graphicsEngine = nullptr;
 
@@ -17,10 +18,11 @@ void graphicsEngine::createFramebuffers()
     {
     }
 
-graphicsEngine::graphicsEngine(window &app, graphicsSystem &graphicsSystem, particleRenderer &particleSystem) :
+graphicsEngine::graphicsEngine(window &app, graphicsSystem &graphicsSystem, particleRenderer &particleSystem, widgetManager &widgetManager) :
     m_window(app),
     m_graphicsSystem(graphicsSystem),
     m_particleSystem(particleSystem),
+    m_widgetManager(widgetManager),
     m_2dShader("shaders/basic2d.vs", "shaders/basic2d.fs"),
     m_tilemapShader("shaders/basic2d.vs", "shaders/basic2d.fs")
     {
@@ -49,6 +51,7 @@ void graphicsEngine::draw(const camera &camera, unsigned int texture, drawFlags 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+        m_widgetManager.draw(camera, texture);
         m_particleSystem.render(camera, texture);
 
         m_2dShader.use();

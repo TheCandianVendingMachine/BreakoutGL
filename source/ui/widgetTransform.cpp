@@ -96,6 +96,7 @@ glm::mat4 widgetTransform::getMatrix(glm::vec2 windowSize)
 					}
 
 				m_transformMatrix = glm::translate(glm::mat4(1.f), glm::vec3(position, 0.f));
+				m_transformMatrix *= glm::scale(glm::mat4(1.f), glm::vec3(trueSize, 0.f));
 
 				m_needsUpdate = false;
 			}

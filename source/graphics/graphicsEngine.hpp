@@ -9,12 +9,14 @@ class camera;
 class window;
 class graphicsSystem;
 class tilemapSystem;
+class widgetManager;
 class graphicsEngine
     {
         private:
             tilemapSystem *m_tilemapSystem = nullptr;
             graphicsSystem &m_graphicsSystem;
             particleRenderer &m_particleSystem;
+            widgetManager &m_widgetManager;
             window &m_window;
 
             shader m_tilemapShader;
@@ -39,7 +41,7 @@ class graphicsEngine
             friend drawFlags &operator|=(drawFlags &lhs, const drawFlags &rhs) { lhs = lhs | rhs; return lhs; }
             friend drawFlags &operator^=(drawFlags &lhs, const drawFlags &rhs) { lhs = lhs ^ rhs; return lhs; }
 
-            graphicsEngine(window &app, graphicsSystem &graphicsSystem, particleRenderer &particleSystem);
+            graphicsEngine(window &app, graphicsSystem &graphicsSystem, particleRenderer &particleSystem, widgetManager &widgetManager);
             void draw(const camera &camera, unsigned int texture = 0, drawFlags flags = drawFlags::ALL) const;
 
             void setTilemap(tilemapSystem *tilemap);

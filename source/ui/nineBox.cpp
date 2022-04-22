@@ -5,12 +5,12 @@
 #include <glad/glad.h>
 #include <vector>
 
-void nineBox::generateVertices()
+void nineBox::generateVertices(glm::vec2 size)
 	{
 		std::vector<vertex> vertices;
 		std::vector<unsigned int> indices;
 
-		const glm::vec2 normalChunkSize(static_cast<float>(m_chunkSize) / m_size);
+		const glm::vec2 normalChunkSize(static_cast<float>(m_chunkSize) / size);
 		constexpr float third = 1.f / 3.f;
 
 		const float initialX[3] = { 0.f, normalChunkSize.x, 1.f - normalChunkSize.x };
@@ -25,25 +25,25 @@ void nineBox::generateVertices()
 					{
 						vertex v0{
 							.position = { initialX[x], initialY[y], 0.f},
-							.textureCoordinate = { x * third, 1.f - y * third },
+							.textureCoordinate = { x * third, y * third },
 							.colour = m_colour
 						};
 
 						vertex v1{
 							.position = { initialX[x] + offsetX[x], initialY[y], 0.f },
-							.textureCoordinate = { x * third + third, 1.f - y * third },
+							.textureCoordinate = { x * third + third, y * third },
 							.colour = m_colour
 						};
 
 						vertex v2{
 							.position = { initialX[x] + offsetX[x], initialY[y] + offsetY[y], 0.f},
-							.textureCoordinate = { x * third + third, 1.f - (y * third + third) },
+							.textureCoordinate = { x * third + third, (y * third + third) },
 							.colour = m_colour
 						};
 
 						vertex v3{
 							.position = { initialX[x], initialY[y] + offsetY[y], 0.f },
-							.textureCoordinate = { x * third, 1.f - (y * third + third) },
+							.textureCoordinate = { x * third, (y * third + third) },
 							.colour = m_colour
 						};
 
@@ -102,7 +102,6 @@ nineBox &nineBox::operator=(const nineBox& rhs)
 				m_texture = rhs.m_texture;
 				m_chunkSize = rhs.m_chunkSize;
 				m_vertexArray = rhs.m_vertexArray;
-				m_size = rhs.m_size;
 				m_colour = rhs.m_colour;
 				m_regenerateVertices = rhs.m_regenerateVertices;
 			}
@@ -116,17 +115,10 @@ nineBox &nineBox::operator=(nineBox&& rhs) noexcept
 				m_texture = std::move(rhs.m_texture);
 				m_chunkSize = std::move(rhs.m_chunkSize);
 				m_vertexArray = std::move(rhs.m_vertexArray);
-				m_size = std::move(rhs.m_size);
 				m_colour = std::move(rhs.m_colour);
 				m_regenerateVertices = std::move(rhs.m_regenerateVertices);
 			}
 		return *this;
-	}
-
-void nineBox::setSize(glm::vec2 size)
-	{
-		m_size = glm::max(size, glm::vec2(2.f * m_chunkSize));
-		m_regenerateVertices = true;
 	}
 
 void nineBox::setColour(glm::vec3 colour)
@@ -141,11 +133,12 @@ void nineBox::setColour(glm::vec4 colour)
 		m_regenerateVertices = true;
 	}
 
-const vertexArray &nineBox::getVertexArray()
+const vertexArray &nineBox::getVertexArray(glm::vec2 size)
 	{
+		size = glm::max(size, glm::vec2(2.f * m_chunkSize));
 		if (m_regenerateVertices)
 			{
-				generateVertices();
+				generateVertices(size);
 			}
 		return m_vertexArray;
 	}

@@ -13,16 +13,13 @@ class nineBox
 			unsigned int m_chunkSize = 0;
 
 			vertexArray m_vertexArray;
-
-			glm::vec2 m_size = { 0.f, 0.f };
 			glm::vec4 m_colour = { 1.f, 1.f, 1.f, 1.f };
 
-			bool m_regenerateVertices = false;
+			bool m_regenerateVertices = true;
 
-			void generateVertices();
+			void generateVertices(glm::vec2 size);
 
 		public:
-			const glm::vec2 &size = m_size;
 			const glm::vec4 &colour = m_colour;
 			const texture &texture = m_texture;
 			
@@ -38,10 +35,9 @@ class nineBox
 			nineBox &operator=(const nineBox &rhs);
 			nineBox &operator=(nineBox &&rhs) noexcept;
 
-			void setSize(glm::vec2 size);
 			void setColour(glm::vec3 colour);
 			void setColour(glm::vec4 colour);
 
-			const vertexArray &getVertexArray();
+			const vertexArray &getVertexArray(glm::vec2 size);
 
 	};
