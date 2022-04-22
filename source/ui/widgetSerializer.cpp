@@ -16,11 +16,11 @@
 
 struct serialisedWidget
 	{
-		fe::str name = 0;
+		std::string name;
 
 		widgetTypes widgetType = widgetTypes::NONE;
-		std::queue<fe::str> parents;
-		fe::str immediateParent = 0;
+		std::queue<std::string> parents;
+		std::string immediateParent;
 
 		widgetTransformEnums::anchor anchor = widgetTransformEnums::anchor::MIDDLE;
 		widgetTransformEnums::type sizeType = widgetTransformEnums::type::ABSOLUTE;
@@ -29,17 +29,17 @@ struct serialisedWidget
 		glm::vec2 size = { 0, 0 };
 		glm::vec2 position = { 0, 0 };
 
-		fe::str onMouseEnterEvent = 0;
-		fe::str onMouseLeaveEvent = 0;
-		fe::str onClickEvent = 0;
-		fe::str onClickStartEvent = 0;
-		fe::str onClickEndEvent = 0;
-		fe::str onDoubleClickEvent = 0;
-		fe::str onDrawEvent = 0;
+		std::string onMouseEnterEvent;
+		std::string onMouseLeaveEvent;
+		std::string onClickEvent;
+		std::string onClickStartEvent;
+		std::string onClickEndEvent;
+		std::string onDoubleClickEvent;
+		std::string onDrawEvent;
 
 		bool noMouseInteraction = false;
 
-		fe::str texture = 0;
+		std::string texture;
 	};
 
 widgetTypes getWidgetTypeFromString(fe::str string)
@@ -116,7 +116,7 @@ void processKey(serialisedWidget &widget, fe::str key, const std::string &data)
 		switch (key)
 			{
 				case FE_STR_CONST("name"):
-					widget.name = FE_STR(data.c_str());
+					widget.name = data;
 					break;
 				case FE_STR_CONST("parent"):
 					{
@@ -125,7 +125,7 @@ void processKey(serialisedWidget &widget, fe::str key, const std::string &data)
 							{
 								int breakPoint = parentPath.find_first_of('/');
 								std::string parent = parentPath.substr(0, breakPoint);
-								widget.parents.push(FE_STR(parent.c_str()));
+								widget.parents.push(parent);
 
 								if (breakPoint == -1)
 									{
@@ -181,25 +181,25 @@ void processKey(serialisedWidget &widget, fe::str key, const std::string &data)
 					widget.sizeType = getTransformTypeFromString(FE_STR(data.c_str()));
 					break;
 				case FE_STR_CONST("on mouse enter"):
-					widget.onMouseEnterEvent = FE_STR(data.c_str());
+					widget.onMouseEnterEvent = data;
 					break;
 				case FE_STR_CONST("on mouse leave"):
-					widget.onMouseLeaveEvent = FE_STR(data.c_str());
+					widget.onMouseLeaveEvent = data;
 					break;
 				case FE_STR_CONST("on click"):
-					widget.onClickEvent = FE_STR(data.c_str());
+					widget.onClickEvent = data;
 					break;
 				case FE_STR_CONST("on click start"):
-					widget.onClickStartEvent = FE_STR(data.c_str());
+					widget.onClickStartEvent = data;
 					break;
 				case FE_STR_CONST("on click end"):
-					widget.onClickEndEvent = FE_STR(data.c_str());
+					widget.onClickEndEvent = data;
 					break;
 				case FE_STR_CONST("on double click"):
-					widget.onDoubleClickEvent = FE_STR(data.c_str());
+					widget.onDoubleClickEvent = data;
 					break;
 				case FE_STR_CONST("on draw"):
-					widget.onDrawEvent = FE_STR(data.c_str());
+					widget.onDrawEvent = data;
 					break;
 				case FE_STR_CONST("allow mouse interaction"):
 					{
@@ -224,7 +224,7 @@ void processKey(serialisedWidget &widget, fe::str key, const std::string &data)
 					}
 					break;
 				case FE_STR_CONST("texture"):
-					widget.texture = FE_STR(data.c_str());
+					widget.texture = data;
 					break;
 				default:
 					break;
@@ -243,7 +243,7 @@ void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
 			Second pass: For all subsequent rows, parse each column value and store in a serialised widget. Each row corresponds to one widget
 			Third pass: For each serialised widget, create relevant widgets within widgetManager
 		*/
-		robin_hood::unordered_map<fe::str, serialisedWidget> serialisedWidgets;
+		robin_hood::unordered_map<std::string, serialisedWidget> serialisedWidgets;
 
 		std::FILE *csv = std::fopen(file, "r");
 		if (!csv)
@@ -330,7 +330,7 @@ void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
 		std::fclose(csv);
 
 		// Step 3: Process all widgets
-		robin_hood::unordered_map<fe::str, widgetGraph::node*> processedWidgets;
+		robin_hood::unordered_map<std::string, widgetGraph::node*> processedWidgets;
 
 		widgetGraph &graph = widgets.m_widgetGraph;
 		plf::colony<widgetManager::widgetState> &managerWidgets = widgets.m_widgets;
@@ -343,14 +343,14 @@ void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
 					widgetManager::widgetState &newWidget = *managerWidgets.emplace();
 
 					// copy serialised data
-					newWidget.widget.noMouseInteraction = serialisedWidget.noMouseInteraction;
-					newWidget.widget.onClickEndEvent = serialisedWidget.onClickEndEvent;
-					newWidget.widget.onClickEvent = serialisedWidget.onClickEvent;
-					newWidget.widget.onClickStartEvent = serialisedWidget.onClickStartEvent;
-					newWidget.widget.onDoubleClickEvent = serialisedWidget.onDoubleClickEvent;
-					newWidget.widget.onDrawEvent = serialisedWidget.onDrawEvent;
-					newWidget.widget.onMouseEnterEvent = serialisedWidget.onMouseEnterEvent;
-					newWidget.widget.onMouseLeaveEvent = serialisedWidget.onMouseLeaveEvent;
+					newWidget.widget.noMouseInteraction =	serialisedWidget.noMouseInteraction;
+					newWidget.widget.onClickEndEvent =		FE_STR(serialisedWidget.onClickEndEvent.c_str());
+					newWidget.widget.onClickEvent =			FE_STR(serialisedWidget.onClickEvent.c_str());
+					newWidget.widget.onClickStartEvent =	FE_STR(serialisedWidget.onClickStartEvent.c_str());
+					newWidget.widget.onDoubleClickEvent =	FE_STR(serialisedWidget.onDoubleClickEvent.c_str());
+					newWidget.widget.onDrawEvent =			FE_STR(serialisedWidget.onDrawEvent.c_str());
+					newWidget.widget.onMouseEnterEvent =	FE_STR(serialisedWidget.onMouseEnterEvent.c_str());
+					newWidget.widget.onMouseLeaveEvent =	FE_STR(serialisedWidget.onMouseLeaveEvent.c_str());
 					newWidget.widget.texture = nineBox("9box.png", 8);
 					newWidget.widget.transform.setAnchor(serialisedWidget.anchor);
 					newWidget.widget.transform.setPosition(serialisedWidget.position, serialisedWidget.positionType);
@@ -358,11 +358,11 @@ void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
 					newWidget.widget.type = serialisedWidget.widgetType;
 
 					widgetGraph::node &widgetNode = graph.addWidget(newWidget.widget, &newWidget);
-					if (serialisedWidget.immediateParent != 0 && processedWidgets.find(serialisedWidget.immediateParent) != processedWidgets.end())
+					if (serialisedWidget.immediateParent != "" && processedWidgets.find(serialisedWidget.immediateParent) != processedWidgets.end())
 						{
 							graph.addChild(*processedWidgets.at(serialisedWidget.immediateParent), widgetNode);
 						}
-					else if (serialisedWidget.immediateParent != 0 && processedWidgets.find(serialisedWidget.immediateParent) == processedWidgets.end())
+					else if (serialisedWidget.immediateParent != "" && processedWidgets.find(serialisedWidget.immediateParent) == processedWidgets.end())
 						{
 							spdlog::error("Attempted to process widget with a parent unprocessed!");
 						}
@@ -379,7 +379,7 @@ void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
 					{
 						while (!widget.second.parents.empty())
 							{
-								fe::str working = widget.second.parents.front();
+								const std::string &working = widget.second.parents.front();
 								if (serialisedWidgets.find(working) != serialisedWidgets.end()) 
 									{
 										processWidget(serialisedWidgets.at(working));

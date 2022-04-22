@@ -87,6 +87,8 @@ int main()
         graphicsEngine graphicsEngine(app, graphicsSystem, particles, widgets);
 
         widgetSerializer::loadFromFile(widgets, "guiTest.csv");
+        widgetSerializer::saveToFile(widgets, "guiTest-save.csv");
+
         widgets.subscribe("continue game", [](message& m, int) { spdlog::info("continue"); });
         widgets.subscribe("goto settings", [](message& m, int) { spdlog::info("settings"); });
         widgets.subscribe("quit game", [](message& m, int) { spdlog::info("quit"); });
