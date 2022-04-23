@@ -23,12 +23,19 @@ class widgetTransform
             bool m_needsUpdate = false;
 
         public:
+            const widgetTransformEnums::anchor &anchor = m_anchor;
+            const widgetTransformEnums::type &sizeType = m_sizeType;
+            const widgetTransformEnums::type &positionType = m_positionType;
+
             void setPosition(glm::vec2 position, widgetTransformEnums::type positionType);
             void setSize(glm::vec2 size, widgetTransformEnums::type sizeType);
             void setAnchor(widgetTransformEnums::anchor anchor);
 
             glm::vec2 getPosition(glm::vec2 windowSize) const;
             glm::vec2 getSize(glm::vec2 windowSize) const;
+
+            glm::vec2 getStoredPosition() const;
+            glm::vec2 getStoredSize() const;
 
             glm::mat4 getMatrix(glm::vec2 windowSize);
 

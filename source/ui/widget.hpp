@@ -4,24 +4,23 @@
 #include "widgetTypes.hpp"
 #include "widgetTransform.hpp"
 #include "nineBox.hpp"
-#include "typeDefines.hpp"
 #include <string>
 
 struct widget
     {
-        std::string name;
+        std::string name = "";
 
         widgetTypes type = widgetTypes::NONE;
         widgetTransform transform;
         nineBox texture;
 
-        fe::str onMouseEnterEvent = 0;
-        fe::str onMouseLeaveEvent = 0;
-        fe::str onClickEvent = 0;
-        fe::str onClickStartEvent = 0;
-        fe::str onClickEndEvent = 0;
-        fe::str onDoubleClickEvent = 0;
-        fe::str onDrawEvent = 0;
+        std::string onMouseEnterEvent = "";
+        std::string onMouseLeaveEvent = "";
+        std::string onClickEvent = "";
+        std::string onClickStartEvent = "";
+        std::string onClickEndEvent = "";
+        std::string onDoubleClickEvent = "";
+        std::string onDrawEvent = "";
 
         bool noMouseInteraction = false;
     };

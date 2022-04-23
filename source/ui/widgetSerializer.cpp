@@ -17,10 +17,7 @@
 struct serialisedWidget
     {
         std::string name;
-
         widgetTypes widgetType = widgetTypes::NONE;
-        std::queue<std::string> parents;
-        std::string immediateParent;
 
         widgetTransformEnums::anchor anchor = widgetTransformEnums::anchor::MIDDLE;
         widgetTransformEnums::type sizeType = widgetTransformEnums::type::ABSOLUTE;
@@ -40,6 +37,9 @@ struct serialisedWidget
         bool noMouseInteraction = false;
 
         std::string texture;
+
+        std::queue<std::string> parents;
+        std::string immediateParent;
     };
 
 widgetTypes getWidgetTypeFromString(fe::str string)
@@ -56,6 +56,20 @@ widgetTypes getWidgetTypeFromString(fe::str string)
                     break;
             }
         return widgetTypes::NONE;
+    }
+
+std::string getStringFromWidgetType(widgetTypes type)
+    {
+        switch (type)
+            {
+                case widgetTypes::PANEL:
+                    return "panel";
+                case widgetTypes::BUTTON:
+                    return "button";
+                default:
+                    break;
+            }
+        return "";
     }
 
 widgetTransformEnums::anchor getAnchorFromString(fe::str string)
@@ -95,6 +109,34 @@ widgetTransformEnums::anchor getAnchorFromString(fe::str string)
         return widgetTransformEnums::anchor::MIDDLE;
     }
 
+std::string getStringFromAnchor(widgetTransformEnums::anchor anchor)
+    {
+        switch (anchor)
+            {
+                case widgetTransformEnums::anchor::TOP_LEFT:
+                    return "top left";
+                case widgetTransformEnums::anchor::TOP_MIDDLE:
+                    return "top middle";
+                case widgetTransformEnums::anchor::TOP_RIGHT:
+                    return "top right";
+                case widgetTransformEnums::anchor::MIDDLE_LEFT:
+                    return "middle left";
+                case widgetTransformEnums::anchor::MIDDLE:
+                    return "middle";
+                case widgetTransformEnums::anchor::MIDDLE_RIGHT:
+                    return "middle right";
+                case widgetTransformEnums::anchor::BOTTOM_LEFT:
+                    return "bottom left";
+                case widgetTransformEnums::anchor::BOTTOM_MIDDLE:
+                    return "bottom middle";
+                case widgetTransformEnums::anchor::BOTTOM_RIGHT:
+                    return "bottom right";
+                default:
+                    break;
+            }
+        return "middle";
+    }
+
 widgetTransformEnums::type getTransformTypeFromString(fe::str string)
     {
         switch (string)
@@ -109,6 +151,20 @@ widgetTransformEnums::type getTransformTypeFromString(fe::str string)
                     break;
             }
         return widgetTransformEnums::type::ABSOLUTE;
+    }
+
+std::string getStringFromTransformType(widgetTransformEnums::type type)
+    {
+        switch (type)
+            {
+                case widgetTransformEnums::type::ABSOLUTE:
+                    return "absolute";
+                case widgetTransformEnums::type::PERCENT:
+                    return "percent";
+                default:
+                    break;
+            }
+        return "absolute";
     }
 
 void processKey(serialisedWidget &widget, fe::str key, const std::string &data)
@@ -235,24 +291,97 @@ void widgetSerializer::saveToFile(widgetManager &widgets, const char *file)
     {
         /*
             Perform BFS on every root node. For each node, serialise to a widget. For each serialised widget, write to disk
+            Step 1: Get all widgets serialised
+            Step 2: Print to disk
         */
         std::vector<serialisedWidget> serialisedWidgets;
         for (auto &root : widgets.m_widgetGraph.roots)
             {
+                std::queue<std::string> currentParentPath;
+                currentParentPath.push("");
+
                 std::queue<const widgetGraph::node*> toProcess;
                 toProcess.push(root);
 
                 while (!toProcess.empty())
                     {
-                        for (auto &child : root->children)
+                        const widgetGraph::node *working = toProcess.front();
+                        toProcess.pop();
+
+                        std::string parentPath = currentParentPath.front();
+                        currentParentPath.pop();
+
+                        for (auto &child : working->children)
                             {
+                                if (!parentPath.empty())
+                                    {
+                                        currentParentPath.push(fmt::format("{}/{}", parentPath, working->widget->name));
+                                    }
+                                else
+                                    {
+                                        currentParentPath.push(fmt::format("{}", working->widget->name));
+                                    }
                                 toProcess.push(child);
                             }
-                    }
 
-                serialisedWidget serialisedWidget;
-                serialisedWidgets.push_back(std::move(serialisedWidget));
+                        serialisedWidget serialisedWidget;
+
+                        serialisedWidget.name =                 working->widget->name;
+                        serialisedWidget.widgetType =           working->widget->type;
+                        serialisedWidget.anchor =               working->widget->transform.anchor;
+                        serialisedWidget.sizeType =             working->widget->transform.sizeType;
+                        serialisedWidget.positionType =         working->widget->transform.positionType;
+                        serialisedWidget.size =                 working->widget->transform.getStoredSize();
+                        serialisedWidget.position =             working->widget->transform.getStoredPosition();
+                        serialisedWidget.onMouseEnterEvent =    working->widget->onMouseEnterEvent;
+                        serialisedWidget.onMouseLeaveEvent =    working->widget->onMouseLeaveEvent;
+                        serialisedWidget.onClickEvent =         working->widget->onClickEvent;
+                        serialisedWidget.onClickStartEvent =    working->widget->onClickStartEvent;
+                        serialisedWidget.onClickEndEvent =      working->widget->onClickEndEvent;
+                        serialisedWidget.onDoubleClickEvent =   working->widget->onDoubleClickEvent;
+                        serialisedWidget.onDrawEvent =          working->widget->onDrawEvent;
+                        serialisedWidget.noMouseInteraction =   working->widget->noMouseInteraction;
+                        serialisedWidget.texture =              "";
+
+                        // Combine parents into string
+                        serialisedWidget.immediateParent = parentPath; // bastardising immediate parent to use the whole path: its easier to construct this way
+
+                        serialisedWidgets.push_back(std::move(serialisedWidget));
+                    }
             }
+
+        std::FILE *csv = std::fopen(file, "w");
+        if (!csv)
+            {
+                spdlog::error("Failed to open CSV file {}", file);
+                return;
+            }
+
+        std::fputs("name,parent,type,position,position type,anchor,size,size type,on mouse enter,on mouse leave,on click,on click start,on click end,on double click,on draw,allow mouse interaction,texture\n", csv);
+        for (auto &widget : serialisedWidgets)
+            {
+                std::fprintf(csv, "%s,%s,%s,\"(%f, %f)\",%s,%s,\"(%f, %f)\",%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                             widget.name.c_str(),
+                             widget.immediateParent.c_str(),
+                             getStringFromWidgetType(widget.widgetType).c_str(),
+                             widget.position.x, widget.position.y,
+                             getStringFromTransformType(widget.positionType).c_str(),
+                             getStringFromAnchor(widget.anchor).c_str(),
+                             widget.size.x, widget.size.y,
+                             getStringFromTransformType(widget.sizeType).c_str(),
+                             widget.onMouseEnterEvent.c_str(),
+                             widget.onMouseLeaveEvent.c_str(),
+                             widget.onClickEvent.c_str(),
+                             widget.onClickStartEvent.c_str(),
+                             widget.onClickEndEvent.c_str(),
+                             widget.onDoubleClickEvent.c_str(),
+                             widget.onDrawEvent.c_str(),
+                             widget.noMouseInteraction ? "TRUE" : "FALSE",
+                             widget.texture.c_str()
+                );
+            }
+
+        std::fclose(csv);
     }
 
 void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
@@ -362,18 +491,18 @@ void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
                     widgetManager::widgetState &newWidget = *managerWidgets.emplace();
 
                     // copy serialised data
-                    newWidget.widget.name =                    serialisedWidget.name;
-                    newWidget.widget.noMouseInteraction =    serialisedWidget.noMouseInteraction;
-                    newWidget.widget.type =                    serialisedWidget.widgetType;
-                    newWidget.widget.texture =                nineBox("9box.png", 8);
+                    newWidget.widget.name =                     serialisedWidget.name;
+                    newWidget.widget.noMouseInteraction =       serialisedWidget.noMouseInteraction;
+                    newWidget.widget.type =                     serialisedWidget.widgetType;
+                    newWidget.widget.texture =                  nineBox("9box.png", 8);
 
-                    newWidget.widget.onClickEndEvent =        FE_STR(serialisedWidget.onClickEndEvent.c_str());
-                    newWidget.widget.onClickEvent =            FE_STR(serialisedWidget.onClickEvent.c_str());
-                    newWidget.widget.onClickStartEvent =    FE_STR(serialisedWidget.onClickStartEvent.c_str());
-                    newWidget.widget.onDoubleClickEvent =    FE_STR(serialisedWidget.onDoubleClickEvent.c_str());
-                    newWidget.widget.onDrawEvent =            FE_STR(serialisedWidget.onDrawEvent.c_str());
-                    newWidget.widget.onMouseEnterEvent =    FE_STR(serialisedWidget.onMouseEnterEvent.c_str());
-                    newWidget.widget.onMouseLeaveEvent =    FE_STR(serialisedWidget.onMouseLeaveEvent.c_str());
+                    newWidget.widget.onClickEvent =             serialisedWidget.onClickEvent;
+                    newWidget.widget.onClickEndEvent =          serialisedWidget.onClickEndEvent;
+                    newWidget.widget.onClickStartEvent =        serialisedWidget.onClickStartEvent;
+                    newWidget.widget.onDoubleClickEvent =       serialisedWidget.onDoubleClickEvent;
+                    newWidget.widget.onDrawEvent =              serialisedWidget.onDrawEvent;
+                    newWidget.widget.onMouseEnterEvent =        serialisedWidget.onMouseEnterEvent;
+                    newWidget.widget.onMouseLeaveEvent =        serialisedWidget.onMouseLeaveEvent;
 
                     newWidget.widget.transform.setAnchor(serialisedWidget.anchor);
                     newWidget.widget.transform.setPosition(serialisedWidget.position, serialisedWidget.positionType);

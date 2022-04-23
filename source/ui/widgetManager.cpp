@@ -7,6 +7,7 @@
 #include <spdlog/spdlog.h>
 #include "graphics/camera.hpp"
 #include "iniConfig.hpp"
+#include "str.hpp"
 
 #undef ABSOLUTE
 
@@ -48,20 +49,20 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
                                     {
                                         // signal cursor enter
                                         state.cursorOn = true;
-                                        signal(state.widget.onMouseEnterEvent);
+                                        signal(FE_STR(state.widget.onMouseEnterEvent.c_str()));
                                     }
 
                                 if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::PRESS && !state.clicked)
                                     {
                                         // signal click on
-                                        signal(state.widget.onClickStartEvent);
+                                        signal(FE_STR(state.widget.onClickStartEvent.c_str()));
                                         if (m_guiClock.getTime() - state.lastClicked <= m_doubleClickThreshold)
                                             {
                                                 // signal double click
-                                                signal(state.widget.onDoubleClickEvent);
+                                                signal(FE_STR(state.widget.onDoubleClickEvent.c_str()));
                                             }
                                         // signal single click
-                                        signal(state.widget.onClickEvent);
+                                        signal(FE_STR(state.widget.onClickEvent.c_str()));
 
                                         state.clicked = true;
                                         state.lastClicked = m_guiClock.getTime();
@@ -69,7 +70,7 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
                                 else if (globals::g_inputs->mouseState(m_guiClick) == inputHandler::inputState::RELEASE && state.clicked)
                                     {
                                         // signal click off
-                                        signal(state.widget.onClickEndEvent);
+                                        signal(FE_STR(state.widget.onClickEndEvent.c_str()));
                                         state.clicked = false;
                                     }
                             }
@@ -78,7 +79,7 @@ void widgetManager::traverseRoot(widgetGraph::node &root)
                                 if (state.cursorOn)
                                     {
                                         // singlam cursor leave
-                                        signal(state.widget.onMouseLeaveEvent);
+                                        signal(FE_STR(state.widget.onMouseLeaveEvent.c_str()));
                                         state.cursorOn = false;
                                     }
                             }
@@ -128,7 +129,7 @@ void widgetManager::drawRoot(widgetGraph::node& root)
                 widgetDrawInfo drawInfo = toDraw.top();
                 toDraw.pop();
 
-                signal(drawInfo.state->widget.onDrawEvent);
+                signal(FE_STR(drawInfo.state->widget.onDrawEvent.c_str()));
 
                 m_widgetShader.setMat4("model", drawInfo.transform);
 

@@ -1,6 +1,16 @@
 #include "widgetTransform.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
+glm::vec2 widgetTransform::getStoredPosition() const
+    {
+        return m_position;
+    }
+
+glm::vec2 widgetTransform::getStoredSize() const
+    {
+        return m_size;
+    }
+
 void widgetTransform::setPosition(glm::vec2 position, widgetTransformEnums::type positionType)
     {
         m_position = position;
