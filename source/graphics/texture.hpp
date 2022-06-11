@@ -36,7 +36,7 @@ class texture
             texture(texture &&rhs) noexcept;
             
             void loadFromFile(const char *file, bool useSRGB);
-            void loadFromMemory(unsigned char *pixels, int length, bool useSRGB);
+            void loadFromMemory(const unsigned char *pixels, int length, bool useSRGB);
 
             void bind(int textureUnit) const;
 

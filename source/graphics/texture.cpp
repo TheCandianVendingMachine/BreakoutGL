@@ -63,7 +63,7 @@ void texture::loadFromFile(const char *file, bool useSRGB)
         stbi_image_free(pixels);
     }
 
-void texture::loadFromMemory(unsigned char *pixels, int length, bool useSRGB)
+void texture::loadFromMemory(const unsigned char *pixels, int length, bool useSRGB)
     {
         unsigned char *memoryPixels = stbi_load_from_memory(pixels, length, &m_width, &m_height, &m_channels, 0);
         loadFromMemoryInternal(memoryPixels, useSRGB);
