@@ -6,6 +6,7 @@
 #include "widgetGraph.hpp"
 #include "inputHandler.hpp"
 #include "graphics/shader.hpp"
+#include "font/fontEngine.hpp"
 #include "time.hpp"
 #include "clock.hpp"
 #include "messaging/eventSource.hpp"
@@ -31,6 +32,8 @@ class widgetManager : public eventSource
             fe::clock m_guiClock;
             fe::time m_doubleClickThreshold = fe::milliseconds(500);
 
+            fontEngine m_fonts;
+            
             inputHandler::input m_guiClick;
 
             plf::colony<widgetState> m_widgets;

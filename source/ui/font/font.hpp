@@ -12,7 +12,8 @@ struct font
         using characterType = char;
 
         robin_hood::unordered_map<characterType, character> characters;
-        robin_hood::unordered_map<characterType, glm::ivec2> characterOffsets;
+        robin_hood::unordered_map<characterType, glm::vec2> characterOffsets;
+        robin_hood::unordered_map<characterType, glm::vec2> characterSizes;
         texture texture;
         fontSizeType sizeType;
         float size = 0.f;

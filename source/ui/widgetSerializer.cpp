@@ -3,6 +3,8 @@
 #include "str.hpp"
 #include "widgetTransformEnums.hpp"
 #include "widgetTypes.hpp"
+#include "font/fontSizeType.hpp"
+#include "text.hpp"
 #include <robin_hood.h>
 #include <vector>
 #include <cstdio>
@@ -25,6 +27,14 @@ struct serialisedWidget
 
         glm::vec2 size = { 0, 0 };
         glm::vec2 position = { 0, 0 };
+
+        std::string fontID;
+        std::string text;
+        glm::vec2 textPosition = { 0, 0 };
+        widgetTransformEnums::anchor textAnchor = widgetTransformEnums::anchor::MIDDLE;
+        widgetTransformEnums::type textPositionType = widgetTransformEnums::type::ABSOLUTE;
+        float fontSize = 48.f;
+        fontSizeType fontSizeType = fontSizeType::PIXEL;
 
         std::string onMouseEnterEvent;
         std::string onMouseLeaveEvent;
@@ -167,6 +177,56 @@ std::string getStringFromTransformType(widgetTransformEnums::type type)
         return "absolute";
     }
 
+fontSizeType getFontSizeTypeFromString(fe::str string)
+    {
+        switch (string)
+            {
+                case FE_STR_CONST("px"):
+                    return fontSizeType::PIXEL;
+                    break;
+                case FE_STR_CONST("pt"):
+                    return fontSizeType::POINT;
+                    break;
+                default:
+                    break;
+            }
+        return fontSizeType::PIXEL;
+    }
+
+std::string getStringFromFontSizeType(fontSizeType type)
+    {
+        switch (type)
+            {
+                case fontSizeType::PIXEL:
+                    return "px";
+                    break;
+                case fontSizeType::POINT:
+                    return "pt";
+                    break;
+                default:
+                    break;
+            }
+        return "px";
+    }
+
+glm::vec2 getVectorFromString(const std::string &str)
+    {
+        int commaPos = str.find_first_of(',', 0);
+
+        std::string px = str.substr(str.find_first_of('(', 0) + 1, commaPos - 1);
+        std::string py = str.substr(commaPos + 1, str.find_first_of(')', 0) - commaPos - 1);
+
+        px.erase(std::remove_if(px.begin(), px.end(), [] (char c) { return std::isspace(c); }), px.end());
+        py.erase(std::remove_if(py.begin(), py.end(), [] (char c) { return std::isspace(c); }), py.end());
+
+        glm::vec2 returnVector = {};
+
+        std::from_chars(px.data(), px.data() + px.size(), returnVector.x);
+        std::from_chars(py.data(), py.data() + py.size(), returnVector.y);
+
+        return returnVector;
+    }
+
 void processKey(serialisedWidget &widget, fe::str key, const std::string &data)
     {
         switch (key)
@@ -200,18 +260,7 @@ void processKey(serialisedWidget &widget, fe::str key, const std::string &data)
                     widget.widgetType = getWidgetTypeFromString(FE_STR(data.c_str()));
                     break;
                 case FE_STR_CONST("position"):
-                    {
-                        int commaPos = data.find_first_of(',', 0);
-
-                        std::string px = data.substr(data.find_first_of('(', 0) + 1, commaPos - 1);
-                        std::string py = data.substr(commaPos + 1, data.find_first_of(')', 0) - commaPos - 1);
-
-                        px.erase(std::remove_if(px.begin(), px.end(), [] (char c) { return std::isspace(c); }), px.end());
-                        py.erase(std::remove_if(py.begin(), py.end(), [] (char c) { return std::isspace(c); }), py.end());
-
-                        std::from_chars(px.data(), px.data() + px.size(), widget.position.x);
-                        std::from_chars(py.data(), py.data() + py.size(), widget.position.y);
-                    }
+                    widget.position = getVectorFromString(data);
                     break;
                 case FE_STR_CONST("position type"):
                     widget.positionType = getTransformTypeFromString(FE_STR(data.c_str()));
@@ -220,18 +269,7 @@ void processKey(serialisedWidget &widget, fe::str key, const std::string &data)
                     widget.anchor = getAnchorFromString(FE_STR(data.c_str()));
                     break;
                 case FE_STR_CONST("size"):
-                    {
-                        int commaPos = data.find_first_of(',', 0);
-
-                        std::string px = data.substr(data.find_first_of('(', 0) + 1, commaPos - 1);
-                        std::string py = data.substr(commaPos + 1, data.find_first_of(')', 0) - commaPos - 1);
-
-                        px.erase(std::remove_if(px.begin(), px.end(), [] (char c) { return std::isspace(c); }), px.end());
-                        py.erase(std::remove_if(py.begin(), py.end(), [] (char c) { return std::isspace(c); }), py.end());
-
-                        std::from_chars(px.data(), px.data() + px.size(), widget.size.x);
-                        std::from_chars(py.data(), py.data() + py.size(), widget.size.y);
-                    }
+                    widget.size = getVectorFromString(data);
                     break;
                 case FE_STR_CONST("size type"):
                     widget.sizeType = getTransformTypeFromString(FE_STR(data.c_str()));
@@ -281,6 +319,27 @@ void processKey(serialisedWidget &widget, fe::str key, const std::string &data)
                     break;
                 case FE_STR_CONST("texture"):
                     widget.texture = data;
+                    break;
+                case FE_STR_CONST("font"):
+                    widget.fontID = data;
+                    break;
+                case FE_STR_CONST("text"):
+                    widget.text = data;
+                    break;
+                case FE_STR_CONST("textSize"):
+                    std::from_chars(data.data(), data.data() + data.size(), widget.fontSize);
+                    break;
+                case FE_STR_CONST("textSizeType"):
+                    widget.fontSizeType = getFontSizeTypeFromString(FE_STR(data.c_str()));
+                    break;
+                case FE_STR_CONST("textPosition"):
+                    widget.textPosition = getVectorFromString(data);
+                    break;
+                case FE_STR_CONST("textPositionType"):
+                    widget.textPositionType = getTransformTypeFromString(FE_STR(data.c_str()));
+                    break;
+                case FE_STR_CONST("textPositionAnchor"):
+                    widget.textAnchor = getAnchorFromString(FE_STR(data.c_str()));
                     break;
                 default:
                     break;
@@ -342,6 +401,14 @@ void widgetSerializer::saveToFile(widgetManager &widgets, const char *file)
                         serialisedWidget.onDrawEvent =          working->widget->onDrawEvent;
                         serialisedWidget.noMouseInteraction =   working->widget->noMouseInteraction;
                         serialisedWidget.texture =              "";
+                        serialisedWidget.text =                 working->widget->text.string;
+                        serialisedWidget.fontID =               working->widget->text.m_font.id();
+                        serialisedWidget.fontSize =             working->widget->text.m_font.font().size;
+                        serialisedWidget.fontSizeType =         working->widget->text.m_font.font().sizeType;
+                        serialisedWidget.textAnchor =           working->widget->textTransform.anchor;
+                        serialisedWidget.textPosition =         working->widget->textTransform.getStoredPosition();
+                        serialisedWidget.textPositionType =     working->widget->textTransform.positionType;
+
 
                         // Combine parents into string
                         serialisedWidget.immediateParent = parentPath; // bastardising immediate parent to use the whole path: its easier to construct this way
@@ -357,10 +424,10 @@ void widgetSerializer::saveToFile(widgetManager &widgets, const char *file)
                 return;
             }
 
-        std::fputs("name,parent,type,position,position type,anchor,size,size type,on mouse enter,on mouse leave,on click,on click start,on click end,on double click,on draw,allow mouse interaction,texture\n", csv);
+        std::fputs("name,parent,type,position,position type,anchor,size,size type,on mouse enter,on mouse leave,on click,on click start,on click end,on double click,on draw,allow mouse interaction,texture,font,text,textSize,textSizeType,textPosition,textPositionType,textPositionAnchor\n", csv);
         for (auto &widget : serialisedWidgets)
             {
-                std::fprintf(csv, "%s,%s,%s,\"(%f, %f)\",%s,%s,\"(%f, %f)\",%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                std::fprintf(csv, "%s,%s,%s,\"(%f, %f)\",%s,%s,\"(%f, %f)\",%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%f,%s,(%f, %f),%s,%s\n",
                              widget.name.c_str(),
                              widget.immediateParent.c_str(),
                              getStringFromWidgetType(widget.widgetType).c_str(),
@@ -377,7 +444,14 @@ void widgetSerializer::saveToFile(widgetManager &widgets, const char *file)
                              widget.onDoubleClickEvent.c_str(),
                              widget.onDrawEvent.c_str(),
                              widget.noMouseInteraction ? "TRUE" : "FALSE",
-                             widget.texture.c_str()
+                             widget.texture.c_str(),
+                             widget.fontID,
+                             widget.text.c_str(),
+                             widget.fontSize,
+                             getStringFromFontSizeType(widget.fontSizeType).c_str(),
+                             widget.textPosition.x, widget.textPosition.y,
+                             getStringFromTransformType(widget.textPositionType).c_str(),
+                             getStringFromAnchor(widget.textAnchor).c_str()
                 );
             }
 
@@ -496,6 +570,7 @@ void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
                     newWidget.widget.type =                     serialisedWidget.widgetType;
                     newWidget.widget.texture =                  nineBox("9box.png", 8);
 
+                    // events
                     newWidget.widget.onClickEvent =             serialisedWidget.onClickEvent;
                     newWidget.widget.onClickEndEvent =          serialisedWidget.onClickEndEvent;
                     newWidget.widget.onClickStartEvent =        serialisedWidget.onClickStartEvent;
@@ -504,11 +579,21 @@ void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
                     newWidget.widget.onMouseEnterEvent =        serialisedWidget.onMouseEnterEvent;
                     newWidget.widget.onMouseLeaveEvent =        serialisedWidget.onMouseLeaveEvent;
 
+                    // transform
                     newWidget.widget.transform.setAnchor(serialisedWidget.anchor);
                     newWidget.widget.transform.setPosition(serialisedWidget.position, serialisedWidget.positionType);
                     newWidget.widget.transform.setSize(serialisedWidget.size, serialisedWidget.sizeType);
 
+                    // text
+                    if (!serialisedWidget.fontID.empty()) 
+                        {
+                            newWidget.widget.text = text(serialisedWidget.text.c_str(), widgets.m_fonts.get(serialisedWidget.fontID.c_str()));
+                            newWidget.widget.textTransform.setAnchor(serialisedWidget.anchor);
+                            newWidget.widget.textTransform.setPosition(serialisedWidget.textPosition, serialisedWidget.textPositionType);
+                            newWidget.widget.hasText = true;
+                        }
 
+                    // done
 
                     widgetGraph::node &widgetNode = graph.addWidget(newWidget.widget, &newWidget);
                     if (serialisedWidget.immediateParent != "" && processedWidgets.find(serialisedWidget.immediateParent) != processedWidgets.end())

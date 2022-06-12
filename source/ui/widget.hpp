@@ -4,6 +4,7 @@
 #include "widgetTypes.hpp"
 #include "widgetTransform.hpp"
 #include "nineBox.hpp"
+#include "text.hpp"
 #include <string>
 
 struct widget
@@ -13,6 +14,11 @@ struct widget
         widgetTypes type = widgetTypes::NONE;
         widgetTransform transform;
         nineBox texture;
+
+        bool hasText = false;
+        text text;
+        widgetTransform textTransform;
+        std::string fontID = "";
 
         std::string onMouseEnterEvent = "";
         std::string onMouseLeaveEvent = "";

@@ -131,6 +131,24 @@ void widgetManager::drawRoot(widgetGraph::node& root)
 
                 signal(FE_STR(drawInfo.state->widget.onDrawEvent.c_str()));
 
+                if (drawInfo.widget->hasText)
+                    {
+                        if (drawInfo.widget->text.needsRebuild)
+                            {
+                                drawInfo.widget->text.build(m_windowSize);
+                                drawInfo.widget->textTransform.setSize({ 1.f, 1.f }, widgetTransformEnums::type::ABSOLUTE);
+                            }
+
+                        // draw
+                        m_widgetShader.setMat4("model", drawInfo.widget->textTransform.getMatrix(m_windowSize));
+
+                        const vertexArray &vertexArray = drawInfo.widget->text.vertexArray;
+                        glBindVertexArray(vertexArray.vao);
+
+                        drawInfo.widget->text.font.font().texture.bind(GL_TEXTURE0);
+                        glDrawElements(GL_TRIANGLES, vertexArray.indexCount, GL_UNSIGNED_INT, 0);
+                    }
+
                 m_widgetShader.setMat4("model", drawInfo.transform);
 
                 const vertexArray &vertexArray = drawInfo.widget->texture.getVertexArray(drawInfo.widget->transform.getSize(m_windowSize));
@@ -156,6 +174,8 @@ widgetManager::widgetManager(glm::vec2 windowSize) :
                 globalUISettings["gui"]["double click time"] = m_doubleClickThreshold.asSeconds();
             }
         globalUISettings.save("gui_settings.ini");
+
+        m_fonts.load("CODE.otf", "default");
     }
 
 widgetManager::~widgetManager()

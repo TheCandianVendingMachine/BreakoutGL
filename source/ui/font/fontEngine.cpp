@@ -112,7 +112,6 @@ fontReference fontEngine::load(const char *font, const char *name, const std::ve
                 for (auto &packed : renderedChars)
                     {
                         font::characterType c = packed.id;
-                        newFont.characterOffsets[c] = { packed.x / contextSize.x, packed.y / contextSize.y };
 
                         FT_UInt glyphIndex = FT_Get_Char_Index(face, c);
 
@@ -131,6 +130,12 @@ fontReference fontEngine::load(const char *font, const char *name, const std::ve
                             }
 
                         FT_Bitmap bitmap = face->glyph->bitmap;
+                        glm::vec2 characterNormalSize = { static_cast<float>(face->glyph->bitmap.width) / contextSize.x, static_cast<float>(face->glyph->bitmap.rows) / contextSize.y };
+                        glm::vec2 characterNormalOffset = { static_cast<float>(packed.x) / contextSize.x, static_cast<float>(packed.y) / contextSize.y };
+
+                        newFont.characterOffsets[c] = characterNormalOffset;
+                        newFont.characterSizes[c] = characterNormalSize;
+
                         unsigned char *texel = bitmap.buffer;
                         if (texel)
                             {

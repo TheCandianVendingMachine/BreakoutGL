@@ -29,7 +29,6 @@
 
 #include "ui/widgetManager.hpp"
 #include "ui/widgetSerializer.hpp"
-#include "ui/font/fontEngine.hpp"
 
 int main()
     {
@@ -84,8 +83,6 @@ int main()
 
         
         widgetManager widgets({ app.width, app.height });
-        fontEngine fonts;
-        fontEngine::fontReference font = fonts.load("CODE.otf", "default");
 
         graphicsSystem graphicsSystem;
         graphicsEngine graphicsEngine(app, graphicsSystem, particles, widgets);
