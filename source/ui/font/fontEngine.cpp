@@ -31,9 +31,9 @@ fontEngine::fontEngine()
             }
     }
 
-fontEngine::fontReference fontEngine::load(const char *font, const char *name)
+fontReference fontEngine::load(const char *font, const char *name)
     {
-        std::vector<characterType> glyphs(128);
+        std::vector<font::characterType> glyphs(128);
         for (char c = 0; c < 127; c++)
             {
                 glyphs[c] = c;
@@ -42,13 +42,20 @@ fontEngine::fontReference fontEngine::load(const char *font, const char *name)
         return load(font, name, glyphs);
     }
 
-fontEngine::fontReference fontEngine::load(const char *font, const char *name, const std::vector<characterType> &glyphs)
+fontReference fontEngine::load(const char *font, const char *name, const std::vector<font::characterType> &glyphs)
     {
+        // todo: check if exists in name AND size
+        if (exists(name))
+            {
+                return get(name);
+            }
+
         FT_Face face = loadFontFile(font);
         FT_Set_Pixel_Sizes(face, 0, 48);
 
         ::font newFont;
-        newFont.characters.resize(glyphs.size());
+        newFont.size = 48.f;
+        newFont.sizeType = fontSizeType::PIXEL;
 
         glm::ivec2 maxSize{0, 0};
         glm::ivec2 averageSize{0, 0};
@@ -64,8 +71,8 @@ fontEngine::fontReference fontEngine::load(const char *font, const char *name, c
                     }
 
                 character newChar;
-                newChar.advance = glm::ivec2(face->glyph->advance.x, face->glyph->advance.y);
-                newChar.bearing = glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
+                newChar.advance = glm::ivec2(face->glyph->advance.x >> 6, face->glyph->advance.y >> 6);
+                newChar.bearing = glm::ivec2(face->bbox.xMin >> 6, face->bbox.yMax >> 6);
                 newChar.size = glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
 
                 stbrp_rect renderedCharData;
@@ -78,7 +85,7 @@ fontEngine::fontReference fontEngine::load(const char *font, const char *name, c
                 maxSize = glm::max(maxSize, newChar.size);
                 averageSize += newChar.size;
 
-                newFont.characters[c] = newChar;
+                newFont.characters.insert({ c, newChar });
             }
 
         // generate bitmaps and pack into VBO
@@ -93,7 +100,6 @@ fontEngine::fontReference fontEngine::load(const char *font, const char *name, c
         stbrp_init_target(&context, contextSize.x, contextSize.y, packedNodes.data(), packedNodes.size());
         int isPacked = stbrp_pack_rects(&context, renderedChars.data(), renderedChars.size());
 
-        packedFontTexture textureData;
         if (!isPacked)
             {
                 spdlog::error("Failed to pack {} ({}) into rectangle", font, name);
@@ -105,8 +111,8 @@ fontEngine::fontReference fontEngine::load(const char *font, const char *name, c
 
                 for (auto &packed : renderedChars)
                     {
-                        characterType c = packed.id;
-                        textureData.characterOffsets[c] = { packed.x, packed.y };
+                        font::characterType c = packed.id;
+                        newFont.characterOffsets[c] = { packed.x / contextSize.x, packed.y / contextSize.y };
 
                         FT_UInt glyphIndex = FT_Get_Char_Index(face, c);
 
@@ -148,19 +154,24 @@ fontEngine::fontReference fontEngine::load(const char *font, const char *name, c
                             }
                     }
 
-                textureData.texture.loadFromMemory(reinterpret_cast<const unsigned char*>(packedFont.getPixelData().data()), packedFont.getBufferSize(), false);
+                newFont.texture.loadFromPixels(reinterpret_cast<const unsigned char*>(packedFont.getPixelData().data()), packedFont.getWidth(), packedFont.getHeight(), packedFont.getChannels(), false);
             }
 
         m_fontIndexLookup[m_lastUID] = m_allFonts.size();
         m_allFonts.push_back(std::move(newFont));
-        m_allFontTextureData.push_back(textureData);
 
         m_fontNameLookup[name] = m_lastUID;
+        m_fontIDLookup[m_lastUID] = name;
 
         return fontReference(this, m_lastUID++);
     }
 
-fontEngine::fontReference fontEngine::get(const char *name)
+fontReference fontEngine::get(const char *name)
     {
         return fontReference(this, m_fontNameLookup.at(name));
+    }
+
+bool fontEngine::exists(const char *name) const
+    {
+        return m_fontNameLookup.find(name) != m_fontNameLookup.end();
     }

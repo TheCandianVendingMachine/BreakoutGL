@@ -3,6 +3,7 @@
 #pragma once
 #include "font.hpp"
 #include "graphics/texture.hpp"
+#include "fontReference.hpp"
 #include <vector>
 #include <robin_hood.h>
 #include <string>
@@ -19,53 +20,17 @@ typedef struct FT_FaceRec_      *FT_Face;
 
 class fontEngine
     {
-        public:
-            using fontID = int;
-            using characterType = char;
-
-            struct fontReference
-                {
-                    private:
-                        fontEngine *m_engineReference = nullptr;
-                        fontID m_fontReference = 0;
-
-                        fontReference(fontEngine *engine, fontID font) :
-                            m_engineReference(engine),
-                            m_fontReference(font)
-                        {
-                        }
-
-                        friend class fontEngine;
-
-                    public:
-                        font &font() const
-                            {
-                                return m_engineReference->m_allFonts.at(m_engineReference->m_fontIndexLookup.at(m_fontReference));
-                            }
-
-                        operator ::font&() const
-                            {
-                                return font();
-                            }
-                };
-
         private:
-            friend struct fontReference;
-
-            struct packedFontTexture
-                {
-                    texture texture;
-                    robin_hood::unordered_map<characterType, glm::ivec2> characterOffsets; // the offsets of each character in the packed texture
-                };
+            friend class fontReference;
 
             FT_Library m_library = nullptr;
 
-            fontID m_lastUID = 1;
+            fontReference::fontID m_lastUID = 1;
 
-            robin_hood::unordered_map<std::string, fontID> m_fontNameLookup;
-            robin_hood::unordered_map<fontID, unsigned int> m_fontIndexLookup;
+            robin_hood::unordered_map<std::string, fontReference::fontID> m_fontNameLookup;
+            robin_hood::unordered_map<fontReference::fontID, std::string> m_fontIDLookup;
+            robin_hood::unordered_map<fontReference::fontID, unsigned int> m_fontIndexLookup;
             std::vector<font> m_allFonts;
-            std::vector<packedFontTexture> m_allFontTextureData;
 
             robin_hood::unordered_map<std::string, FT_Face> m_loadedFreeTypeFonts;
 
@@ -75,7 +40,8 @@ class fontEngine
             fontEngine();
 
             fontReference load(const char *font, const char *name);
-            fontReference load(const char *font, const char *name, const std::vector<characterType> &glyphs);
+            fontReference load(const char *font, const char *name, const std::vector<font::characterType> &glyphs);
 
             fontReference get(const char *name);
+            bool exists(const char *name) const;
     };
