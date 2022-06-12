@@ -89,22 +89,22 @@ particleRenderer::particleRenderer() :
         vertex v0{
             .position = { 0.f, 0.f, 0.f },
             .textureCoordinate = { 0.f, 1.f },
-            .colour = { 1.f, 1.f, 1.f }
+            .colour = { 1.f, 1.f, 1.f, 1.f }
         };
         vertex v1{
             .position = { 1.f, 0.f, 0.f },
             .textureCoordinate = { 1.f, 1.f },
-            .colour = { 1.f, 1.f, 1.f }
+            .colour = { 1.f, 1.f, 1.f, 1.f }
         };
         vertex v2{
             .position = { 1.f, 1.f, 0.f },
             .textureCoordinate = { 1.f, 0.f },
-            .colour = { 1.f, 1.f, 1.f }
+            .colour = { 1.f, 1.f, 1.f, 1.f }
         };
         vertex v3{
             .position = { 0.f, 1.f, 0.f },
             .textureCoordinate = { 0.f, 0.f },
-            .colour = { 1.f, 1.f, 1.f }
+            .colour = { 1.f, 1.f, 1.f, 1.f }
         };
 
         m_particleVAO.bindVertices({ v0, v1, v2, v3 });

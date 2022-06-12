@@ -167,7 +167,7 @@ void vertexArray::use(vertex::attributes attributes) const
 
         if ((attributes & vertex::attributes::COLOUR) == vertex::attributes::COLOUR)
             {
-                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), reinterpret_cast<void*>(offsetof(vertex, colour)));
+                glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), reinterpret_cast<void*>(offsetof(vertex, colour)));
                 glEnableVertexAttribArray(4);
             }
 
