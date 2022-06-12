@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stack>
+#include <queue>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
@@ -102,7 +103,7 @@ void widgetManager::drawRoot(widgetGraph::node& root)
                 widget *widget = nullptr;
                 widgetState *state = nullptr;
             };
-        std::stack<widgetDrawInfo> toDraw;
+        std::queue<widgetDrawInfo> toDraw;
 
         glm::vec2 cursorPosition = globals::g_inputs->getCursorPosition();
         while (!nodesToCheck.empty())
@@ -126,7 +127,7 @@ void widgetManager::drawRoot(widgetGraph::node& root)
 
         while (!toDraw.empty())
             {
-                widgetDrawInfo drawInfo = toDraw.top();
+                widgetDrawInfo drawInfo = toDraw.front();
                 toDraw.pop();
 
                 signal(FE_STR(drawInfo.state->widget.onDrawEvent.c_str()));

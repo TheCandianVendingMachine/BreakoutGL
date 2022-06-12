@@ -41,18 +41,17 @@ graphicsEngine::graphicsEngine(window &app, graphicsSystem &graphicsSystem, part
         });
 
         glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST); // rendering in order of appearance for 2d
+
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glClearColor(0.f, 0.f, 0.f, 1.0f);
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+        glClearColor(0.f, 0.f, 0.f, 1.f);
     }
 
 void graphicsEngine::draw(const camera &camera, unsigned int texture, drawFlags flags) const
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        m_widgetManager.draw(camera, texture);
-        m_particleSystem.render(camera, texture);
 
         m_2dShader.use();
         m_2dShader.setMat4("view", camera.view());
@@ -77,6 +76,9 @@ void graphicsEngine::draw(const camera &camera, unsigned int texture, drawFlags 
                         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
                     }
             }
+
+        m_particleSystem.render(camera, texture);
+        m_widgetManager.draw(camera, texture);
 
         glBindVertexArray(0);
 
