@@ -11,8 +11,6 @@ class texture
             int m_channels = 0;
             unsigned int m_id = 0;
 
-            void loadFromMemoryInternal(unsigned char *pixels, bool useSRGB);
-
         public:
             enum class type
                 {
@@ -36,7 +34,8 @@ class texture
             texture(texture &&rhs) noexcept;
             
             void loadFromFile(const char *file, bool useSRGB);
-            void loadFromMemory(const unsigned char *pixels, int length, bool useSRGB);
+            void loadFromMemory(const unsigned char *formattedPixels, int length, bool useSRGB);
+            void loadFromPixels(const unsigned char *pixels, int width, int height, int channels, bool useSRGB);
 
             void bind(int textureUnit) const;
 

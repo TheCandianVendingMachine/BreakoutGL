@@ -3,44 +3,6 @@
 #include <glad/glad.h>
 #include <utility>
 
-void texture::loadFromMemoryInternal(unsigned char *pixels, bool useSRGB)
-    {
-        glGenTextures(1, &m_id);
-        glBindTexture(GL_TEXTURE_2D, m_id);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        if (pixels) 
-            {
-                constexpr GLint possibleFormats[] = {
-                    GL_NONE,
-                    GL_RED,
-                    GL_RG,
-                    GL_RGB,
-                    GL_RGBA
-                };
-
-                GLint sourceFormat = possibleFormats[m_channels];
-                GLint destFormat = possibleFormats[m_channels];
-
-                if (useSRGB) 
-                    {
-                        sourceFormat = GL_SRGB;
-                        if (m_channels == 4)
-                            {
-                                sourceFormat = GL_SRGB_ALPHA;
-                                destFormat = GL_RGBA;
-                            }
-                    }
-
-                glTexImage2D(GL_TEXTURE_2D, 0, sourceFormat, width, height, 0, destFormat, GL_UNSIGNED_BYTE, pixels);
-                glGenerateMipmap(GL_TEXTURE_2D);
-            }
-    }
-
 texture::texture(const char *file, bool useSRGB)
     {
         loadFromFile(file, useSRGB);
@@ -59,15 +21,57 @@ texture::texture(texture &&rhs) noexcept
 void texture::loadFromFile(const char *file, bool useSRGB)
     {
         unsigned char *pixels = stbi_load(file, &m_width, &m_height, &m_channels, 0);
-        loadFromMemoryInternal(pixels, useSRGB);
+        loadFromPixels(pixels, width, height, channels, useSRGB);
         stbi_image_free(pixels);
     }
 
 void texture::loadFromMemory(const unsigned char *pixels, int length, bool useSRGB)
     {
         unsigned char *memoryPixels = stbi_load_from_memory(pixels, length, &m_width, &m_height, &m_channels, 0);
-        loadFromMemoryInternal(memoryPixels, useSRGB);
+        loadFromPixels(memoryPixels, width, height, channels, useSRGB);
         stbi_image_free(memoryPixels);
+    }
+
+void texture::loadFromPixels(const unsigned char *pixels, int width, int height, int channels, bool useSRGB)
+    {
+        m_width = width;
+        m_height = height;
+        m_channels = channels;
+
+        glGenTextures(1, &m_id);
+        glBindTexture(GL_TEXTURE_2D, m_id);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        if (pixels) 
+            {
+                constexpr GLint possibleFormats[] = {
+                    GL_NONE,
+                    GL_RED,
+                    GL_RG,
+                    GL_RGB,
+                    GL_RGBA
+                };
+
+                GLint sourceFormat = possibleFormats[channels];
+                GLint destFormat = possibleFormats[channels];
+
+                if (useSRGB) 
+                    {
+                        sourceFormat = GL_SRGB;
+                        if (channels == 4)
+                            {
+                                sourceFormat = GL_SRGB_ALPHA;
+                                destFormat = GL_RGBA;
+                            }
+                    }
+
+                glTexImage2D(GL_TEXTURE_2D, 0, sourceFormat, width, height, 0, destFormat, GL_UNSIGNED_BYTE, pixels);
+                glGenerateMipmap(GL_TEXTURE_2D);
+            }
     }
 
 void texture::bind(int textureUnit) const
