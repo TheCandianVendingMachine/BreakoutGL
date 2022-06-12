@@ -141,7 +141,8 @@ void widgetManager::drawRoot(widgetGraph::node& root)
                             }
 
                         // draw
-                        m_widgetShader.setMat4("model", drawInfo.widget->textTransform.getMatrix(m_windowSize));
+                        glm::mat4 parentTransform = glm::translate(glm::mat4(1.f), glm::vec3(drawInfo.transform[3]));
+                        m_widgetShader.setMat4("model", parentTransform * drawInfo.widget->textTransform.getMatrix(m_windowSize));
 
                         const vertexArray &vertexArray = drawInfo.widget->text.vertexArray;
                         glBindVertexArray(vertexArray.vao);
