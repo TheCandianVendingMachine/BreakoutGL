@@ -161,7 +161,7 @@ void widgetManager::drawRoot(widgetGraph::node& root)
             }
     }
 
-widgetManager::widgetManager(glm::vec2 windowSize) :
+widgetManager::widgetManager(glm::vec2 windowSize, const char *fontFile) :
     m_guiClick(globals::g_inputs->addDefaultInput("GUI", "Click", GLFW_MOUSE_BUTTON_LEFT)),
     m_windowSize(windowSize),
     m_widgetShader("shaders/widgets.vs", "shaders/widgets.fs")
@@ -177,7 +177,11 @@ widgetManager::widgetManager(glm::vec2 windowSize) :
             }
         globalUISettings.save("gui_settings.ini");
 
-        m_fonts.load("CODE.otf", "default");
+        iniConfig fonts(fontFile);
+        for (auto &[fontName, section] : fonts.sections)
+            {
+                m_fonts.load(section["file"].asString().data(), fontName.c_str(), section["size"].asUnsignedInt());
+            }
     }
 
 widgetManager::~widgetManager()

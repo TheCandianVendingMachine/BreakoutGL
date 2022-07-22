@@ -5,6 +5,7 @@
 #include "widgetTypes.hpp"
 #include "font/fontSizeType.hpp"
 #include "text.hpp"
+#include "iniConfig.hpp"
 #include <robin_hood.h>
 #include <vector>
 #include <cstdio>
@@ -629,3 +630,4 @@ void widgetSerializer::loadFromFile(widgetManager &widgets, const char *file)
                     }
             }
     }
+

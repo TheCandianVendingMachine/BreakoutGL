@@ -39,8 +39,8 @@ class fontEngine
         public:
             fontEngine();
 
-            fontReference load(const char *font, const char *name);
-            fontReference load(const char *font, const char *name, const std::vector<font::characterType> &glyphs);
+            fontReference load(const char *font, const char *name, unsigned int pixelHeight);
+            fontReference load(const char *font, const char *name, const std::vector<font::characterType> &glyphs, unsigned int pixelHeight);
 
             fontReference get(const char *name);
             bool exists(const char *name) const;

@@ -31,7 +31,7 @@ fontEngine::fontEngine()
             }
     }
 
-fontReference fontEngine::load(const char *font, const char *name)
+fontReference fontEngine::load(const char *font, const char *name, unsigned int pixelHeight)
     {
         std::vector<font::characterType> glyphs(128);
         for (char c = 0; c < 127; c++)
@@ -39,10 +39,10 @@ fontReference fontEngine::load(const char *font, const char *name)
                 glyphs[c] = c;
             }
 
-        return load(font, name, glyphs);
+        return load(font, name, glyphs, pixelHeight);
     }
 
-fontReference fontEngine::load(const char *font, const char *name, const std::vector<font::characterType> &glyphs)
+fontReference fontEngine::load(const char *font, const char *name, const std::vector<font::characterType> &glyphs, unsigned int pixelHeight)
     {
         // todo: check if exists in name AND size
         if (exists(name))
@@ -51,7 +51,7 @@ fontReference fontEngine::load(const char *font, const char *name, const std::ve
             }
 
         FT_Face face = loadFontFile(font);
-        FT_Set_Pixel_Sizes(face, 0, 48);
+        FT_Set_Pixel_Sizes(face, 0, pixelHeight);
 
         ::font newFont;
         newFont.size = 48.f;

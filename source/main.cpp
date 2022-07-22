@@ -82,7 +82,7 @@ int main()
         });
 
         
-        widgetManager widgets({ app.width, app.height });
+        widgetManager widgets({ app.width, app.height }, "fonts.ini");
 
         graphicsSystem graphicsSystem;
         graphicsEngine graphicsEngine(app, graphicsSystem, particles, widgets);

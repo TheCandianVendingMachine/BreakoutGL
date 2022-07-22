@@ -50,7 +50,7 @@ class widgetManager : public eventSource
             friend void widgetSerializer::loadFromFile(widgetManager&, const char*);
 
         public:
-            widgetManager(glm::vec2 windowSize);
+            widgetManager(glm::vec2 windowSize, const char *fontFile);
             ~widgetManager();
 
             void setWindowSize(glm::vec2 size);
